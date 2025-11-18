@@ -2,8 +2,6 @@ import { test as base, expect, Locator } from '@playwright/test';
 import {
   BASE_URL,
   NAV_BUTTONS_TEXT,
-  MOBILE_MENU_TOGGLE,
-  MOBILE_NAV_MENU,
   LOADING_SPINNER,
   DEFAULT_TIMEOUT,
   NAVIGATION_TIMEOUT,
@@ -18,8 +16,6 @@ type CryptoComPageFixture = {
   verifyAllNavigationItemsVisible: () => Promise<boolean>;
   dismissCookieBanner: () => Promise<void>;
   waitForPageLoad: () => Promise<void>;
-  isMobileView: () => Promise<boolean>;
-  openMobileMenu: () => Promise<void>;
   verifyTradingPairLoaded: (pair?: string) => Promise<boolean>;
   getVisibleNavigationItems: () => Promise<string[]>;
 };
@@ -80,16 +76,10 @@ export const test = base.extend<CryptoComPageFixture>({
     const clickNav = async (itemText: string): Promise<void> => {
       const navItem = getNavigationItem(itemText);
 
-      // Wait for element to be visible and clickable
       await navItem.waitFor({ state: 'visible', timeout: ELEMENT_VISIBLE_TIMEOUT });
       await navItem.scrollIntoViewIfNeeded();
-
-      // Check if element is clickable
       await expect(navItem).toBeEnabled({ timeout: 5000 });
-
       await navItem.click({ timeout: 10000 });
-
-      // Wait for navigation to complete
       await page.waitForLoadState('domcontentloaded', { timeout: NAVIGATION_TIMEOUT });
     };
 
@@ -102,8 +92,6 @@ export const test = base.extend<CryptoComPageFixture>({
 
       await navItem.waitFor({ state: 'visible', timeout: ELEMENT_VISIBLE_TIMEOUT });
       await navItem.hover();
-
-      // Wait for any dropdown/submenu to appear
       await page.waitForTimeout(1000);
     };
 
@@ -115,8 +103,6 @@ export const test = base.extend<CryptoComPageFixture>({
       try {
         for (const itemText of NAV_BUTTONS_TEXT) {
           const navItem = getNavigationItem(itemText);
-
-          // Check if item is visible with a reasonable timeout
           const isVisible = await navItem.isVisible({ timeout: 5000 });
 
           if (!isVisible) {
@@ -137,14 +123,11 @@ export const test = base.extend<CryptoComPageFixture>({
     const dismissCookies = async (): Promise<void> => {
       // Wait for page to settle
       await page.waitForTimeout(3000);
-
-      // First, handle the cookie dialog
       const cookieDialog = page.locator('[role="dialog"]').first();
 
       if (await cookieDialog.isVisible({ timeout: 5000 })) {
         const dialogText = await cookieDialog.textContent();
         if (dialogText && dialogText.includes('We use cookies')) {
-          // Try to click Accept button
           const acceptButton = cookieDialog.locator(
             'button:has-text("Accept non-essential cookies")'
           );
@@ -155,8 +138,6 @@ export const test = base.extend<CryptoComPageFixture>({
         }
       }
 
-      // Second, handle the Skip/Next popup
-      // Look for Skip button specifically
       const skipButton = page.locator('button:has-text("Skip")').first();
       if (await skipButton.isVisible({ timeout: 5000 })) {
         await skipButton.click();
@@ -200,30 +181,6 @@ export const test = base.extend<CryptoComPageFixture>({
     };
 
     await use(waitForLoad);
-  },
-
-  isMobileView: async ({ page }, use) => {
-    const checkMobile = async (): Promise<boolean> => {
-      const viewport = page.viewportSize();
-      return viewport ? viewport.width < 768 : false;
-    };
-
-    await use(checkMobile);
-  },
-
-  openMobileMenu: async ({ page }, use) => {
-    const openMenu = async (): Promise<void> => {
-      const mobileToggle = page.locator(MOBILE_MENU_TOGGLE);
-      if (await mobileToggle.isVisible({ timeout: 5000 })) {
-        await mobileToggle.click();
-
-        // Wait for mobile menu to appear
-        const mobileMenu = page.locator(MOBILE_NAV_MENU);
-        await mobileMenu.waitFor({ state: 'visible', timeout: 5000 });
-      }
-    };
-
-    await use(openMenu);
   },
 
   verifyTradingPairLoaded: async ({ page }, use) => {
