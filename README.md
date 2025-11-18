@@ -1,7 +1,7 @@
 # Playwright E2E Tests for FPMarket Demo
 
 [![CI Pipeline](https://github.com/brucechang/playwright-e2e-fpmarket-demo/workflows/CI%20Pipeline/badge.svg)](https://github.com/brucechang/playwright-e2e-fpmarket-demo/actions/workflows/ci.yml)
-[![Playwright Tests](https://img.shields.io/badge/playwright-^1.56.1-blue)](https://playwright.dev/)
+[![Playwright Tests](https://img.shields.io/badge/playwright-^1.48.0-blue)](https://playwright.dev/)
 [![TypeScript](https://img.shields.io/badge/typescript-^5.9.3-blue)](https://www.typescriptlang.org/)
 [![ESLint](https://img.shields.io/badge/eslint-^8.57.1-purple)](https://eslint.org/)
 [![Prettier](https://img.shields.io/badge/prettier-^3.6.2-ff69b4)](https://prettier.io/)
@@ -14,7 +14,7 @@
 
 | Module                               | Version  | Purpose                          |
 | ------------------------------------ | -------- | -------------------------------- |
-| **@playwright/test**                 | ^1.56.1  | Modern web testing framework     |
+| **@playwright/test**                 | ^1.48.0  | Modern web testing framework     |
 | **typescript**                       | ^5.9.3   | TypeScript language support      |
 | **eslint**                           | ^8.57.1  | JavaScript/TypeScript linting    |
 | **@typescript-eslint/parser**        | ^8.47.0  | TypeScript parser for ESLint     |
@@ -97,104 +97,64 @@ make setup
 Or run individual steps:
 
 ```bash
-make install          # Install dependencies
-make install-browsers # Install Playwright browsers
-```
-
-## 🔧 Configuration
-
-Create a `.env` file in the root directory with your test environment variables:
-
-```env
-BASE_URL=https://demo.fpmarket.com
-TEST_USERNAME=your-demo-username
-TEST_PASSWORD=your-demo-password
+make setup  # Complete setup: install dependencies and browsers
 ```
 
 ## 🔧 Available Commands
 
-This project uses a Makefile for easy command execution. To see all available commands:
+This project uses a simplified Makefile for essential commands. To see all available commands:
 
 ```bash
 make help
 ```
 
-### Quick Commands
+### Essential Commands
 
-- `make setup` - Complete project setup
-- `make test` - Run all tests
-- `make test-headed` - Run tests with visible browser
-- `make lint` - Run ESLint on TypeScript files
-- `make lint-fix` - Run ESLint and fix issues automatically
+- `make setup` - Complete project setup (install dependencies and browsers)
+- `make test` - Run all Playwright tests
+- `make lint` - Run ESLint and Prettier checks
 - `make format` - Format code with Prettier
-- `make type-check` - Run TypeScript type checking
-- `make report` - View test reports
-- `make clean` - Clean and reinstall dependencies
+- `make docker-test` - Run tests in Docker container
+- `make clean` - Clean generated files and reinstall dependencies
 
 ## 🧪 Running Tests
 
-### Run all tests
+### Run all tests locally
 
 ```bash
 make test
 ```
 
-### Run tests in headed mode (visible browser)
+### Run tests in Docker
 
 ```bash
-make test-headed
+make docker-test
 ```
 
-### Run tests in a specific browser
+### Run specific test files (advanced)
 
 ```bash
-make test-chromium
-make test-firefox
-make test-webkit
+npx playwright test tests/crypto-navigation.spec.ts
 ```
 
-### Run specific test files
+### View test reports
 
 ```bash
-npx playwright test auth/login.spec.js
-```
-
-### Run tests in debug mode
-
-```bash
-make test-debug
-```
-
-### Run tests with UI mode
-
-```bash
-make test-ui
+npx playwright show-report
 ```
 
 ## 🔍 Code Quality & Linting
 
-### Run linting
+### Run linting and format checks
 
 ```bash
 make lint
 ```
 
-### Auto-fix linting issues
-
-```bash
-make lint-fix
-```
-
-### Format code
+### Format code automatically
 
 ```bash
 make format
-```
-
-### Check TypeScript types
-
-```bash
-make type-check
 ```
 
 ## 🚀 CI/CD Pipeline
@@ -223,17 +183,14 @@ The CI pipeline consists of four main jobs:
 Run the same checks locally before pushing:
 
 ```bash
-# Run complete CI pipeline locally
-make ci-all
+# Run linting and format checks (same as CI)
+make lint
 
-# Run just linting checks
-make ci-lint
+# Run tests locally
+make test
 
-# Run just tests
-make ci-test
-
-# Run Docker-based tests
-make ci-docker-test
+# Run tests in Docker (same as CI)
+make docker-test
 ```
 
 ### Viewing Results
@@ -251,51 +208,36 @@ make ci-docker-test
 
 ### Docker Commands
 
-#### Build Docker Image
-
-```bash
-make docker-build
-```
-
-#### Run Tests in Docker
+#### Run Tests in Docker (Build + Test)
 
 ```bash
 make docker-test
 ```
 
-#### Run Tests with Docker Compose
+This command automatically:
+
+- Builds the Docker image with latest code
+- Runs all Playwright tests in the container
+- Saves test results and reports to local directories
+
+#### Advanced Docker Usage
 
 ```bash
-make docker-compose-test
-```
+# Use Docker Compose for orchestrated testing
+docker-compose up --build playwright-tests
 
-#### Start Report Server
-
-```bash
-make docker-compose-report
+# Start report server (optional)
+docker-compose up --build report-server
 ```
 
 Then open http://localhost:9323 to view test reports.
 
-#### Development with Docker
-
-```bash
-# Open shell in Docker container
-make docker-shell
-
-# Clean Docker artifacts
-make docker-clean
-
-# Rebuild Docker image
-make docker-rebuild
-```
-
 ### Docker Architecture
 
-- **Base Image**: `mcr.microsoft.com/playwright:v1.41.0-focal`
-- **Multi-stage builds**: Optimized for CI/CD pipelines
-- **Volume mounting**: Test results and reports are persisted
-- **Network isolation**: Containers run in isolated network
+- **Base Image**: `mcr.microsoft.com/playwright:v1.48.0-focal` (matches npm package version)
+- **Optimized builds**: Efficient caching and minimal layers
+- **Volume mounting**: Test results and reports are persisted locally
+- **Environment consistency**: Same runtime as CI/CD pipeline
 
 ### Benefits of Docker
 
@@ -310,15 +252,15 @@ make docker-rebuild
 After running tests, you can view detailed reports:
 
 ```bash
-make report
+npx playwright show-report
 ```
 
 This will open an interactive HTML report showing:
 
-- Test results and status
-- Screenshots and videos of failures
-- Performance metrics
-- Timeline of test execution
+- ✅ Test results and status
+- 📸 Screenshots and videos of failures
+- ⏱️ Performance metrics and timing
+- 📋 Timeline of test execution
 
 ## 🏗️ Test Categories
 

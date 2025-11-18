@@ -1,12 +1,11 @@
-# Use the official Playwright image with all browsers pre-installed
-FROM mcr.microsoft.com/playwright:v1.41.0-focal
+# Use the official Playwright image with all browsers pre-installed (latest stable version)
+FROM mcr.microsoft.com/playwright:v1.48.0-focal
 
 # Set working directory
 WORKDIR /app
 
 # Set environment variables
 ENV CI=true
-ENV NODE_ENV=test
 
 # Copy package files
 COPY package*.json ./

@@ -9,7 +9,6 @@ services:
       - ./playwright-report:/app/playwright-report
     environment:
       - CI=true
-      - NODE_ENV=test
     networks:
       - playwright-network
 
