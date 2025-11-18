@@ -41,19 +41,14 @@ test.describe('Crypto.com Exchange Navigation Tests', () => {
     // Get all visible navigation items
     const visibleItems = await getVisibleNavigationItems();
 
-    // Verify we have at least some navigation items visible
     expect(visibleItems.length).toBeGreaterThan(0);
-
-    // Log what was found
     console.log(`Found navigation items: ${visibleItems.join(', ')}`);
 
-    // Verify all expected navigation items are visible
     const allVisible = await verifyAllNavigationItemsVisible();
 
     if (!allVisible) {
       console.log('Not all navigation items are visible. Checking individual items...');
 
-      // Check each expected navigation item individually
       for (const expectedItem of NAV_BUTTONS_TEXT) {
         const isVisible = visibleItems.includes(expectedItem);
         console.log(`${expectedItem}: ${isVisible ? '✓' : '✗'}`);
