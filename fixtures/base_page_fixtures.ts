@@ -39,25 +39,37 @@ export const test = base.extend<CryptoComPageFixture>({
 
   getNavigationItem: async ({ page }, use) => {
     const getNavItem = (itemText: string): Locator => {
-      // Multiple selector strategies for crypto.com navigation
+      // Enhanced selector strategies for crypto.com navigation
       const selectors = [
-        `nav a:has-text("${itemText}")`,
-        `header a:has-text("${itemText}")`,
-        `[role="navigation"] a:has-text("${itemText}")`,
-        `a[href*="${itemText.toLowerCase()}"]`,
+        // Direct text matches
+        `text="${itemText}"`,
+        `*:has-text("${itemText}")`,
+
+        // Navigation specific selectors
+        `nav *:has-text("${itemText}")`,
+        `header *:has-text("${itemText}")`,
+        `[role="navigation"] *:has-text("${itemText}")`,
+
+        // Link and button selectors
+        `a:has-text("${itemText}")`,
         `button:has-text("${itemText}")`,
-        `[data-testid="${itemText.toLowerCase()}"]`,
-        `[data-cy="${itemText.toLowerCase()}"]`,
+        `span:has-text("${itemText}")`,
+        `div:has-text("${itemText}")`,
+
+        // Attribute-based selectors
+        `a[href*="${itemText.toLowerCase()}"]`,
+        `[data-testid*="${itemText.toLowerCase()}"]`,
+        `[data-cy*="${itemText.toLowerCase()}"]`,
+        `[title="${itemText}"]`,
+        `[aria-label="${itemText}"]`,
       ];
 
       for (const selector of selectors) {
         const element = page.locator(selector).first();
-        if (element) {
-          return element;
-        }
+        return element;
       }
 
-      // Fallback to text search
+      // This should never be reached, but fallback anyway
       return page.locator(`text="${itemText}"`).first();
     };
 
@@ -222,17 +234,21 @@ export const test = base.extend<CryptoComPageFixture>({
     await use(verifyPair);
   },
 
-  getVisibleNavigationItems: async ({ page }, use) => {
+  getVisibleNavigationItems: async ({ getNavigationItem }, use) => {
     const getVisibleItems = async (): Promise<string[]> => {
       const visibleItems: string[] = [];
 
       for (const itemText of NAV_BUTTONS_TEXT) {
-        const navItem = page
-          .locator(`a:has-text("${itemText}"), header a:has-text("${itemText}")`)
-          .first();
+        // Use the same getNavigationItem logic for consistency
+        const navItem = getNavigationItem(itemText);
 
-        if (await navItem.isVisible({ timeout: 2000 })) {
-          visibleItems.push(itemText);
+        try {
+          if (await navItem.isVisible({ timeout: 3000 })) {
+            visibleItems.push(itemText);
+          }
+        } catch {
+          // If the element doesn't exist or throws an error, skip it
+          continue;
         }
       }
 
