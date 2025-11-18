@@ -163,20 +163,19 @@ This project includes a comprehensive GitHub Actions CI/CD pipeline that runs:
 
 ### Workflow Overview
 
-The CI pipeline consists of four main jobs:
+The CI pipeline consists of three main jobs:
 
 1. **Code Quality Check** (`lint`): Validates code style, formatting, and TypeScript types
-2. **E2E Tests** (`e2e-tests`): Runs Playwright tests directly on the GitHub Actions runner
-3. **Docker E2E Tests** (`docker-tests`): Runs the same tests inside a Docker container
-4. **Test Summary** (`test-summary`): Provides a consolidated report of all test results
+2. **Docker E2E Tests** (`docker-tests`): Runs Playwright tests inside a Docker container
+3. **Test Summary** (`test-summary`): Provides a consolidated report of all test results
 
 ### Pipeline Features
 
-- ✅ **Parallel Execution**: Lint checks run first, then E2E tests run in parallel
-- ✅ **Multi-Environment**: Tests both native and Docker environments
+- ✅ **Streamlined Execution**: Lint checks run first, then Docker E2E tests
+- ✅ **Consistent Environment**: All tests run in Docker for consistency
 - ✅ **Artifact Collection**: Automatically uploads test reports and results
 - ✅ **Smart Triggers**: Runs on PRs and pushes to `main`/`develop` branches
-- ✅ **Comprehensive Coverage**: ESLint, Prettier, TypeScript, and E2E tests
+- ✅ **Comprehensive Coverage**: ESLint, Prettier, TypeScript, and Docker E2E tests
 
 ### Local CI Testing
 
