@@ -4,19 +4,13 @@ import { NAV_BUTTONS_TEXT } from '@root/data/constant';
 test.describe('Crypto.com Exchange Navigation Tests', () => {
   test.beforeEach(async ({ page, navigateToExchange, dismissCookieBanner, waitForPageLoad }) => {
     try {
-      // Navigate to crypto.com exchange
       await navigateToExchange();
-
       // Dismiss any cookie banners
       await dismissCookieBanner();
-
-      // Wait for page to fully load
       await waitForPageLoad();
-
-      // Give a moment for any animations to complete
       await page.waitForTimeout(2000);
     } catch (error) {
-      console.log(`Setup error: ${error.message}`);
+      console.log(`Setup error: ${error instanceof Error ? error.message : String(error)}`);
       // Don't fail the test if setup has minor issues
     }
   });
@@ -25,9 +19,7 @@ test.describe('Crypto.com Exchange Navigation Tests', () => {
     page,
     verifyTradingPairLoaded,
   }) => {
-    // Verify the page loaded with correct URL
     expect(page.url()).toContain('crypto.com/exchange');
-
     // Verify BTC_USD trading pair is loaded
     const isPairLoaded = await verifyTradingPairLoaded('BTC_USD');
     expect(isPairLoaded).toBe(true);
