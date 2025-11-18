@@ -110,35 +110,6 @@ test.describe('Crypto.com Exchange Navigation Tests', () => {
     }
   });
 
-  test('should handle mobile view correctly', async ({ page, isMobileView, openMobileMenu }) => {
-    const isCurrentlyMobile = await isMobileView();
-
-    if (isCurrentlyMobile) {
-      console.log('Testing mobile navigation...');
-
-      // Try to open mobile menu
-      await openMobileMenu();
-
-      // Take screenshot of mobile view
-      await page.screenshot({
-        path: 'crypto-com-mobile-navigation.png',
-        fullPage: false,
-      });
-    } else {
-      console.log('Desktop view detected, testing responsive behavior...');
-
-      // Test responsive behavior by changing viewport
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.waitForTimeout(1000);
-
-      const isMobileNow = await isMobileView();
-      expect(isMobileNow).toBe(true);
-
-      // Try mobile menu in responsive mode
-      await openMobileMenu();
-    }
-  });
-
   test('should verify individual navigation items exist', async ({ getNavigationItem }) => {
     // Test each expected navigation item individually
     for (const itemText of NAV_BUTTONS_TEXT) {

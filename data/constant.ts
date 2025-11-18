@@ -11,9 +11,6 @@ export const NAV_BUTTONS_TEXT: string[] = [
   'More',
 ];
 
-export const MOBILE_MENU_TOGGLE: string = "[data-testid='mobile-menu-toggle']";
-export const MOBILE_NAV_MENU: string = "[data-testid='mobile-nav-menu']";
-
 export const LOADING_SPINNER: string = "[data-testid='loading-spinner']";
 
 // Timeouts (in milliseconds)
