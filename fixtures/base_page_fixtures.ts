@@ -126,7 +126,7 @@ export const test = base.extend<CryptoComPageFixture>({
 
       if (await cookieDialog.isVisible({ timeout: 5000 })) {
         const dialogText = await cookieDialog.textContent();
-        if (dialogText && dialogText.includes('We use cookies')) {
+        if (dialogText && dialogText.indexOf('We use cookies') !== -1) {
           const acceptButton = cookieDialog.locator(
             'button:has-text("Accept non-essential cookies")'
           );
@@ -184,7 +184,7 @@ export const test = base.extend<CryptoComPageFixture>({
 
   verifyTradingPairLoaded: async ({ page }, use) => {
     const verifyPair = async (pair: string = 'BTC_USD'): Promise<boolean> => {
-      return page.url().includes(pair);
+      return page.url().indexOf(pair) !== -1;
     };
 
     await use(verifyPair);
