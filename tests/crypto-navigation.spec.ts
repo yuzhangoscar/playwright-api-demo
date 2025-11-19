@@ -68,7 +68,7 @@ test.describe('Crypto.com Exchange Navigation Tests', () => {
 
       if (!allVisible) {
         console.log('Not all navigation items are visible. Checking individual items...');
-        const itemStatus = {};
+        const itemStatus: Record<string, string> = {};
 
         const currentVisibleItems = await getVisibleNavigationItems();
         for (const expectedItem of NAV_BUTTONS_TEXT) {
@@ -199,7 +199,8 @@ test.describe('Crypto.com Exchange Navigation Tests', () => {
     );
 
     await allure.step('Verify each navigation item individually', async () => {
-      const itemResults = {};
+      const itemResults: Record<string, { exists: boolean; visible: boolean; enabled: boolean }> =
+        {};
 
       for (const itemText of NAV_BUTTONS_TEXT) {
         await allure.step(`Check ${itemText} navigation item`, async () => {
