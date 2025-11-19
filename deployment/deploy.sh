@@ -119,7 +119,7 @@ run_remote "
     cd $REMOTE_DIR
     
     # Create production environment file
-    cat > .env << 'EOF'
+    cat > .env << EOF
 NODE_ENV=production
 PORT=$SERVICE_PORT
 LOG_LEVEL=info
@@ -134,7 +134,7 @@ run_remote "
     cd $REMOTE_DIR
     
     # Create PM2 ecosystem file
-    cat > ecosystem.config.js << 'EOF'
+    cat > ecosystem.config.js << EOF
 module.exports = {
   apps: [{
     name: '$APP_NAME',
