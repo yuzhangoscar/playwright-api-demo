@@ -12,8 +12,8 @@ permissions:
   id-token: write
 
 jobs:
-  test:
-    name: Test and generate Allure report
+  e2e-tests:
+    name: E2E Tests with Allure
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
@@ -35,11 +35,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Run API server tests
-        run: |
-          npm run api:build
-          npm run api:test
 
       - name: Run E2E tests and generate Allure results
         run: |
@@ -79,12 +74,123 @@ jobs:
         run: |
           allure generate ./allure-results -o ./allure-report --clean
 
-      - name: Upload Allure HTML report
+      - name: Upload E2E Allure HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report-pr-${{ github.event.number }}
+          name: e2e-allure-report-pr-${{ github.event.number }}
           path: ./allure-report
+
+  api-tests:
+    name: API Tests with Jest
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build API server
+        run: npm run api:build
+
+      - name: Run Jest API tests with Allure
+        run: |
+          # Install Jest Allure reporter
+          npm install --save-dev jest-allure2-reporter
+          
+          # Create Jest config for Allure reporting
+          cat > jest.allure.config.js << 'EOF'
+          module.exports = {
+            preset: 'ts-jest',
+            testEnvironment: 'node',
+            roots: ['<rootDir>/tests'],
+            testMatch: ['**/*.test.ts'],
+            transform: {
+              '^.+\\.ts$': 'ts-jest',
+            },
+            collectCoverageFrom: [
+              'src/**/*.ts',
+              '!src/**/*.d.ts',
+            ],
+            coverageDirectory: 'coverage-api',
+            coverageReporters: ['text', 'lcov', 'html'],
+            setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+            testTimeout: 10000,
+            verbose: true,
+            reporters: [
+              'default',
+              ['jest-allure2-reporter', {
+                resultsDir: './allure-results-api',
+                labels: {
+                  package: 'API Tests',
+                  testClass: 'Jest API Tests',
+                  testMethod: '{{testTitle}}',
+                  parentSuite: 'Mock API Server',
+                  suite: '{{ancestorTitles}}',
+                  subSuite: '{{title}}'
+                }
+              }]
+            ]
+          };
+          EOF
+          
+          # Run Jest tests with Allure reporter
+          npx jest --config=jest.allure.config.js tests/api.test.ts || exit 0
+
+      - name: Set up Java for Allure CLI
+        if: always()
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Allure CLI
+        if: always()
+        uses: actions/cache@v4
+        id: allure-cache-api
+        with:
+          path: /opt/allure
+          key: allure-2.25.0
+
+      - name: Install Allure CLI
+        if: always() && steps.allure-cache-api.outputs.cache-hit != 'true'
+        run: |
+          curl -o allure-commandline.zip -Ls https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip
+          unzip -q allure-commandline.zip
+          sudo mv allure-2.25.0 /opt/allure
+
+      - name: Setup Allure CLI PATH
+        if: always()
+        run: |
+          sudo ln -sf /opt/allure/bin/allure /usr/local/bin/allure
+          allure --version
+
+      - name: Generate API Allure HTML report
+        if: always()
+        run: |
+          allure generate ./allure-results-api -o ./allure-report-api --clean
+
+      - name: Upload API Allure HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-allure-report-pr-${{ github.event.number }}
+          path: ./allure-report-api
 
   deploy:
     name: Deploy Allure report to GitHub Pages
@@ -110,10 +216,52 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run API server tests
+      - name: Build API server
+        run: npm run api:build
+
+      - name: Run Jest API tests with Allure
         run: |
-          npm run api:build
-          npm run api:test
+          # Install Jest Allure reporter
+          npm install --save-dev jest-allure2-reporter
+          
+          # Create Jest config for Allure reporting
+          cat > jest.allure.config.js << 'EOF'
+          module.exports = {
+            preset: 'ts-jest',
+            testEnvironment: 'node',
+            roots: ['<rootDir>/tests'],
+            testMatch: ['**/*.test.ts'],
+            transform: {
+              '^.+\\.ts$': 'ts-jest',
+            },
+            collectCoverageFrom: [
+              'src/**/*.ts',
+              '!src/**/*.d.ts',
+            ],
+            coverageDirectory: 'coverage-api',
+            coverageReporters: ['text', 'lcov', 'html'],
+            setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+            testTimeout: 10000,
+            verbose: true,
+            reporters: [
+              'default',
+              ['jest-allure2-reporter', {
+                resultsDir: './allure-results-api',
+                labels: {
+                  package: 'API Tests',
+                  testClass: 'Jest API Tests',
+                  testMethod: '{{testTitle}}',
+                  parentSuite: 'Mock API Server',
+                  suite: '{{ancestorTitles}}',
+                  subSuite: '{{title}}'
+                }
+              }]
+            ]
+          };
+          EOF
+          
+          # Run Jest tests with Allure reporter
+          npx jest --config=jest.allure.config.js tests/api.test.ts || exit 0
 
       - name: Run E2E tests and generate Allure results
         run: |
@@ -145,44 +293,65 @@ jobs:
           sudo ln -sf /opt/allure/bin/allure /usr/local/bin/allure
           allure --version
 
-      - name: Generate Allure HTML report
+      - name: Generate E2E Allure HTML report
         run: |
-          allure generate ./allure-results -o ./allure-report --clean
+          allure generate ./allure-results -o ./allure-report-e2e --clean
+
+      - name: Generate API Allure HTML report
+        run: |
+          allure generate ./allure-results-api -o ./allure-report-api --clean
 
       - name: Create Reports Index
         run: |
-          mkdir -p ./allure-report-with-index/allure-reports
-          cp -r ./allure-report ./allure-report-with-index/allure-reports/${{ github.run_number }}
+          mkdir -p ./allure-report-with-index/allure-reports/e2e
+          mkdir -p ./allure-report-with-index/allure-reports/api
+          cp -r ./allure-report-e2e ./allure-report-with-index/allure-reports/e2e/${{ github.run_number }}
+          cp -r ./allure-report-api ./allure-report-with-index/allure-reports/api/${{ github.run_number }}
           
           cat > ./allure-report-with-index/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
           <head>
-              <title>Playwright E2E Test Reports</title>
+              <title>Test Reports - E2E & API</title>
               <meta charset="UTF-8">
               <style>
                   body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-                  .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                  .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
                   h1 { color: #333; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
-                  .report-link { display: block; padding: 15px; margin: 10px 0; background: #007acc; color: white; text-decoration: none; border-radius: 5px; transition: background 0.3s; }
-                  .report-link:hover { background: #005a9e; }
-                  .latest { background: #28a745; }
-                  .latest:hover { background: #218838; }
+                  .report-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9; }
+                  .report-link { display: block; padding: 15px; margin: 10px 0; color: white; text-decoration: none; border-radius: 5px; transition: background 0.3s; }
+                  .e2e-link { background: #007acc; }
+                  .e2e-link:hover { background: #005a9e; }
+                  .api-link { background: #28a745; }
+                  .api-link:hover { background: #218838; }
+                  .latest { background: #dc3545; }
+                  .latest:hover { background: #c82333; }
                   .meta { color: #666; font-size: 14px; margin-top: 5px; }
               </style>
           </head>
           <body>
               <div class="container">
-                  <h1>🧪 Playwright E2E Test Reports</h1>
-                  <p>Comprehensive test results with Allure reporting</p>
+                  <h1>🧪 Test Reports Dashboard</h1>
+                  <p>Comprehensive E2E and API test results with Allure reporting</p>
                   
-                  <a href="./allure-reports/${{ github.run_number }}/" class="report-link latest">
-                      📊 Latest Report (Run #${{ github.run_number }})
-                      <div class="meta">Generated: $(date)</div>
-                  </a>
+                  <div class="report-section">
+                      <h2>🎭 E2E Tests (Playwright)</h2>
+                      <a href="./allure-reports/e2e/${{ github.run_number }}/" class="report-link e2e-link">
+                          📊 Latest E2E Report (Run #${{ github.run_number }})
+                          <div class="meta">Playwright E2E Tests - Generated: $(date)</div>
+                      </a>
+                  </div>
+                  
+                  <div class="report-section">
+                      <h2>🚀 API Tests (Jest)</h2>
+                      <a href="./allure-reports/api/${{ github.run_number }}/" class="report-link api-link">
+                          📈 Latest API Report (Run #${{ github.run_number }})
+                          <div class="meta">Mock API Server Tests - Generated: $(date)</div>
+                      </a>
+                  </div>
                   
                   <h3>📁 All Reports</h3>
-                  <p>Reports are organized by GitHub Actions run number.</p>
+                  <p>Reports are organized by test type and GitHub Actions run number.</p>
                   
                   <h3>🔗 Direct Access</h3>
                   <p>Replace <code>[RUN_NUMBER]</code> with the specific run number:</p>
@@ -203,13 +372,14 @@ jobs:
           publish_dir: ./allure-report-with-index
           keep_files: true
 
-      - name: Output Allure Report URL
+      - name: Output Allure Report URLs
         run: |
-          echo "## 📊 Allure Report Published" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Test Reports Published" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 **Report URL:** https://yuzhangoscar.github.io/playwright-e2e-fpmarket-demo/allure-reports/${{ github.run_number }}/" >> $GITHUB_STEP_SUMMARY
+          echo "🎭 **E2E Report:** https://yuzhangoscar.github.io/playwright-e2e-fpmarket-demo/allure-reports/e2e/${{ github.run_number }}/" >> $GITHUB_STEP_SUMMARY
+          echo "🚀 **API Report:** https://yuzhangoscar.github.io/playwright-e2e-fpmarket-demo/allure-reports/api/${{ github.run_number }}/" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📁 **Browse All Reports:** https://yuzhangoscar.github.io/playwright-e2e-fpmarket-demo/" >> $GITHUB_STEP_SUMMARY
+          echo "📊 **Reports Dashboard:** https://yuzhangoscar.github.io/playwright-e2e-fpmarket-demo/" >> $GITHUB_STEP_SUMMARY
 
       - name: Deploy API Server to AWS EC2
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
