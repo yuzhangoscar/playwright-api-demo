@@ -36,7 +36,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests and generate Allure results
+      - name: Run API server tests
+        run: |
+          npm run api:build
+          npm run api:test
+
+      - name: Run E2E tests and generate Allure results
         run: |
           npx playwright install --with-deps
           npx playwright test || exit 0
@@ -105,7 +110,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests and generate Allure results
+      - name: Run API server tests
+        run: |
+          npm run api:build
+          npm run api:test
+
+      - name: Run E2E tests and generate Allure results
         run: |
           npx playwright install --with-deps
           npx playwright test || exit 0
@@ -200,3 +210,41 @@ jobs:
           echo "🔗 **Report URL:** https://yuzhangoscar.github.io/playwright-e2e-fpmarket-demo/allure-reports/${{ github.run_number }}/" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📁 **Browse All Reports:** https://yuzhangoscar.github.io/playwright-e2e-fpmarket-demo/" >> $GITHUB_STEP_SUMMARY
+
+      - name: Deploy API Server to AWS EC2
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$EC2_HOST" ] || [ -z "$EC2_SSH_KEY" ]; then
+            echo "⚠️ AWS deployment skipped: Missing required secrets"
+            echo "Required: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, EC2_HOST, EC2_SSH_KEY"
+            exit 0
+          fi
+          
+          # Install AWS CLI if not present
+          if ! command -v aws &> /dev/null; then
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+          fi
+          
+          # Setup SSH key
+          mkdir -p ~/.ssh
+          echo "$EC2_SSH_KEY" > ~/.ssh/ec2_key.pem
+          chmod 600 ~/.ssh/ec2_key.pem
+          
+          # Deploy using deployment script
+          chmod +x ./deployment/deploy.sh
+          ./deployment/deploy.sh "$EC2_HOST" ~/.ssh/ec2_key.pem main
+          
+          # Output deployment info
+          echo "## 🚀 API Server Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **Health Check:** http://$EC2_HOST:3000/api/health" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **Blacklist API:** http://$EC2_HOST:3000/api/blacklist" >> $GITHUB_STEP_SUMMARY
+          echo "🔍 **Check Name:** http://$EC2_HOST:3000/api/blacklist/check/malicious_user" >> $GITHUB_STEP_SUMMARY
