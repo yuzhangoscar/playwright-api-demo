@@ -15,6 +15,11 @@ help: ## Show this help message
 	@echo ""
 	@echo "📊 Allure Reports:"
 	@grep -E '^(allure-generate|allure-serve|allure-open):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "🏷️ Tag Usage Examples:"
+	@echo "  \033[33mmake test TAG=@smoke\033[0m          Run smoke tests only"
+	@echo "  \033[33mmake test TAG=@slow\033[0m           Run slow tests only"
+	@echo "  \033[33mmake docker-test-e2e TAG=@smoke\033[0m Run smoke tests in Docker"
 
 # 🔧 Setup & Development
 setup: ## Complete project setup
@@ -37,21 +42,37 @@ clean: ## Clean generated files and reinstall
 	npm install
 
 # 🧪 Local Testing
-test: ## Run all E2E tests locally
+test: ## Run all E2E tests locally (use TAG=@smoke for specific tags)
+ifdef TAG
+	npm test -- --grep "$(TAG)"
+else
 	npm test
+endif
 
-test-allure: ## Run tests with Allure reporting
+test-allure: ## Run tests with Allure reporting (use TAG=@smoke for specific tags)
+ifdef TAG
+	npm run test:allure -- --grep "$(TAG)"
+else
 	npm run test:allure
+endif
 
 test-accessibility: ## Run WCAG accessibility tests
 	npm run test:accessibility
 
 # 🐳 Docker Testing (Recommended)
-docker-test-e2e: ## Run E2E tests in Docker (generates Allure HTML)
+docker-test-e2e: ## Run E2E tests in Docker (generates Allure HTML, use TAG=@smoke for specific tags)
+ifdef TAG
+	docker-compose run --rm e2e-tests npm test -- --grep "$(TAG)"
+else
 	docker-compose up --build e2e-tests
+endif
 
-docker-test-e2e-serve: ## Run E2E tests + serve report at :9001
+docker-test-e2e-serve: ## Run E2E tests + serve report at :9001 (use TAG=@smoke for specific tags)
+ifdef TAG
+	docker-compose run --rm e2e-tests npm test -- --grep "$(TAG)"
+else
 	docker-compose up --build e2e-tests
+endif
 	@echo "Starting Allure report server at http://localhost:9001"
 	docker-compose up --build e2e-allure-server
 
