@@ -98,7 +98,7 @@ jobs:
           allure generate ./allure-results -o ./allure-report --clean
 
       - name: Create Reports Index
-        if: always() && (github.ref == 'refs/heads/main' || github.event_name == 'push')
+        if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/deploy-allure-report-on-github')
         run: |
           mkdir -p ./allure-report-with-index
           cp -r ./allure-report ./allure-report-with-index/allure-reports/${{ github.run_number }}
@@ -150,7 +150,7 @@ jobs:
           path: ./allure-report
 
       - name: Deploy Allure Report to GitHub Pages
-        if: always() && (github.ref == 'refs/heads/main' || github.event_name == 'push')
+        if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/deploy-allure-report-on-github')
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -158,7 +158,7 @@ jobs:
           keep_files: true
 
       - name: Output Allure Report URL
-        if: always() && (github.ref == 'refs/heads/main' || github.event_name == 'push')
+        if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/deploy-allure-report-on-github')
         run: |
           echo "## 📊 Allure Report Published" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
