@@ -90,6 +90,51 @@ jobs:
         run: |
           allure generate ./allure-results -o ./allure-report --clean
 
+      - name: Create Reports Index
+        if: always() && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p ./allure-report-with-index
+          cp -r ./allure-report ./allure-report-with-index/allure-reports/${{ github.run_number }}
+          
+          # Create main index.html
+          cat > ./allure-report-with-index/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Playwright E2E Test Reports</title>
+              <meta charset="UTF-8">
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+                  .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                  h1 { color: #333; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
+                  .report-link { display: block; padding: 15px; margin: 10px 0; background: #007acc; color: white; text-decoration: none; border-radius: 5px; transition: background 0.3s; }
+                  .report-link:hover { background: #005a9e; }
+                  .latest { background: #28a745; }
+                  .latest:hover { background: #218838; }
+                  .meta { color: #666; font-size: 14px; margin-top: 5px; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🧪 Playwright E2E Test Reports</h1>
+                  <p>Comprehensive test results with Allure reporting</p>
+                  
+                  <a href="./allure-reports/${{ github.run_number }}/" class="report-link latest">
+                      📊 Latest Report (Run #${{ github.run_number }})
+                      <div class="meta">Generated: $(date)</div>
+                  </a>
+                  
+                  <h3>📁 All Reports</h3>
+                  <p>Reports are organized by GitHub Actions run number.</p>
+                  
+                  <h3>🔗 Direct Access</h3>
+                  <p>Replace <code>[RUN_NUMBER]</code> with the specific run number:</p>
+                  <code>https://yuzhangoscar.github.io/playwright-e2e-fpmarket-demo/allure-reports/[RUN_NUMBER]/</code>
+              </div>
+          </body>
+          </html>
+          EOF
+
       - name: Upload Allure HTML artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -102,5 +147,14 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
-          destination_dir: allure-reports/${{ github.run_number }}
+          publish_dir: ./allure-report-with-index
+          keep_files: true
+
+      - name: Output Allure Report URL
+        if: always() && github.ref == 'refs/heads/main'
+        run: |
+          echo "## 📊 Allure Report Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **Report URL:** https://yuzhangoscar.github.io/playwright-e2e-fpmarket-demo/allure-reports/${{ github.run_number }}/" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📁 **Browse All Reports:** https://yuzhangoscar.github.io/playwright-e2e-fpmarket-demo/" >> $GITHUB_STEP_SUMMARY
