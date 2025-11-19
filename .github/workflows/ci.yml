@@ -126,6 +126,7 @@ jobs:
   accessibility-tests:
     name: WCAG Accessibility Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout repository
