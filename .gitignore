@@ -157,6 +157,8 @@ dist
 
 # Playwright
 /test-results/
+/test-results-e2e/
+/test-results-wcag/
 /playwright-report/
 /blob-report/
 /playwright/.cache/

@@ -33,7 +33,7 @@ format: ## Auto-format code with Prettier
 	npm run format
 
 clean: ## Clean generated files and reinstall
-	rm -rf node_modules package-lock.json test-results/ playwright-report/ allure-results/ allure-report/ accessibility-report/ accessibility-results.json accessibility-results.xml
+	rm -rf node_modules package-lock.json test-results/ test-results-e2e/ test-results-wcag/ playwright-report/ allure-results/ allure-report/ accessibility-report/ accessibility-results.json accessibility-results.xml
 	npm install
 
 # 🧪 Local Testing

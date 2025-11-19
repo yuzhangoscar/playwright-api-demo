@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.e2e
     volumes:
-      - ./test-results:/app/test-results
+      - ./test-results-e2e:/app/test-results
       - ./playwright-report:/app/playwright-report
       - ./allure-results:/app/allure-results
       - ./allure-report:/app/allure-report
@@ -38,7 +38,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.wcag
     volumes:
-      - ./test-results:/app/test-results
+      - ./test-results-wcag:/app/test-results
       - ./accessibility-report:/app/accessibility-report
       - ./accessibility-results.json:/app/accessibility-results.json
       - ./accessibility-results.xml:/app/accessibility-results.xml
