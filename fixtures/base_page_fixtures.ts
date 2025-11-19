@@ -27,7 +27,6 @@ export const test = base.extend<CryptoComPageFixture>({
         waitUntil: 'domcontentloaded',
         timeout: DEFAULT_TIMEOUT,
       });
-      await page.waitForLoadState('domcontentloaded', { timeout: DEFAULT_TIMEOUT });
     };
 
     await use(navigate);

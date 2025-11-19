@@ -1,19 +1,22 @@
 # Playwright E2E Tests for FPMarket Demo
 
-[![Playwright Tests](https://img.shields.io/badge/playwright-^1.56.1-blue)](https://playwright.dev/)
+[![CI Pipeline](https://github.com/brucechang/playwright-e2e-fpmarket-demo/workflows/CI%20Pipeline/badge.svg)](https://github.com/brucechang/playwright-e2e-fpmarket-demo/actions/workflows/ci.yml)
+[![Playwright Tests](https://img.shields.io/badge/playwright-^1.48.0-blue)](https://playwright.dev/)
 [![TypeScript](https://img.shields.io/badge/typescript-^5.9.3-blue)](https://www.typescriptlang.org/)
 [![ESLint](https://img.shields.io/badge/eslint-^8.57.1-purple)](https://eslint.org/)
 [![Prettier](https://img.shields.io/badge/prettier-^3.6.2-ff69b4)](https://prettier.io/)
 [![Husky](https://img.shields.io/badge/husky-^9.1.7-green)](https://typicode.github.io/husky/)
 [![Commitlint](https://img.shields.io/badge/commitlint-^20.1.0-orange)](https://commitlint.js.org/)
+[![Docker](https://img.shields.io/badge/docker-supported-blue)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 📦 Installed Modules & Versions
 
 | Module                               | Version  | Purpose                          |
 | ------------------------------------ | -------- | -------------------------------- |
-| **@playwright/test**                 | ^1.56.1  | Modern web testing framework     |
+| **@playwright/test**                 | ^1.48.0  | Modern web testing framework     |
 | **typescript**                       | ^5.9.3   | TypeScript language support      |
+| **dotenv**                           | ^17.2.3  | Environment variable management  |
 | **eslint**                           | ^8.57.1  | JavaScript/TypeScript linting    |
 | **@typescript-eslint/parser**        | ^8.47.0  | TypeScript parser for ESLint     |
 | **@typescript-eslint/eslint-plugin** | ^8.47.0  | TypeScript-specific ESLint rules |
@@ -95,120 +98,224 @@ make setup
 Or run individual steps:
 
 ```bash
-make install          # Install dependencies
-make install-browsers # Install Playwright browsers
+make setup  # Complete setup: install dependencies and browsers
 ```
 
 ## 🔧 Configuration
 
 Create a `.env` file in the root directory with your test environment variables:
 
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` with your configuration:
+
 ```env
-BASE_URL=https://demo.fpmarket.com
-TEST_USERNAME=your-demo-username
-TEST_PASSWORD=your-demo-password
+# Base URL for the application
+BASE_URL=https://crypto.com/exchange/trade/BTC_USD
+
+# Test Configuration
+TEST_TIMEOUT=30000
+TEST_RETRIES=2
+HEADLESS=true
+
+# Browser Configuration
+DEFAULT_BROWSER=chromium
+VIEWPORT_WIDTH=1920
+VIEWPORT_HEIGHT=1080
+
+# Reporting
+REPORT_TITLE="Crypto.com E2E Test Results"
 ```
 
 ## 🔧 Available Commands
 
-This project uses a Makefile for easy command execution. To see all available commands:
+This project uses a simplified Makefile for essential commands. To see all available commands:
 
 ```bash
 make help
 ```
 
-### Quick Commands
+### Essential Commands
 
-- `make setup` - Complete project setup
-- `make test` - Run all tests
-- `make test-headed` - Run tests with visible browser
-- `make lint` - Run ESLint on TypeScript files
-- `make lint-fix` - Run ESLint and fix issues automatically
+- `make setup` - Complete project setup (install dependencies and browsers)
+- `make test` - Run all Playwright tests
+- `make lint` - Run ESLint and Prettier checks
 - `make format` - Format code with Prettier
-- `make type-check` - Run TypeScript type checking
-- `make report` - View test reports
-- `make clean` - Clean and reinstall dependencies
+- `make docker-test` - Run tests in Docker container
+- `make clean` - Clean generated files and reinstall dependencies
 
 ## 🧪 Running Tests
 
-### Run all tests
+### Run all tests locally
 
 ```bash
 make test
 ```
 
-### Run tests in headed mode (visible browser)
+### Run tests in Docker
 
 ```bash
-make test-headed
+make docker-test
 ```
 
-### Run tests in a specific browser
+### Run specific test files (advanced)
 
 ```bash
-make test-chromium
-make test-firefox
-make test-webkit
+npx playwright test tests/crypto-navigation.spec.ts
 ```
 
-### Run specific test files
+### View test reports
 
 ```bash
-npx playwright test auth/login.spec.js
-```
-
-### Run tests in debug mode
-
-```bash
-make test-debug
-```
-
-### Run tests with UI mode
-
-```bash
-make test-ui
+npx playwright show-report
 ```
 
 ## 🔍 Code Quality & Linting
 
-### Run linting
+### Run linting and format checks
 
 ```bash
 make lint
 ```
 
-### Auto-fix linting issues
-
-```bash
-make lint-fix
-```
-
-### Format code
+### Format code automatically
 
 ```bash
 make format
 ```
 
-### Check TypeScript types
+## 🚀 CI/CD Pipeline
+
+This project includes a comprehensive GitHub Actions CI/CD pipeline that runs:
+
+### Workflow Overview
+
+The CI pipeline consists of three main jobs:
+
+1. **Code Quality Check** (`lint`): Validates code style, formatting, and TypeScript types
+2. **Docker E2E Tests** (`docker-tests`): Runs Playwright tests inside a Docker container
+3. **Test Summary** (`test-summary`): Provides a consolidated report of all test results
+
+### Pipeline Features
+
+- ✅ **Streamlined Execution**: Lint checks run first, then Docker E2E tests
+- ✅ **Consistent Environment**: All tests run in Docker for consistency
+- ✅ **Artifact Collection**: Automatically uploads test reports and results
+- ✅ **Smart Triggers**: Runs on PRs and pushes to `main`/`develop` branches
+- ✅ **Comprehensive Coverage**: ESLint, Prettier, TypeScript, and Docker E2E tests
+
+### Local CI Testing
+
+Run the same checks locally before pushing:
 
 ```bash
-make type-check
+# Run linting and format checks (same as CI)
+make lint
+
+# Run tests locally
+make test
+
+# Run tests in Docker (same as CI)
+make docker-test
 ```
+
+### Viewing Results
+
+- **Test Reports**: Download from Actions artifacts or view in the GitHub interface
+- **Coverage**: Detailed Playwright HTML reports are generated for each run
+- **Logs**: Full test execution logs available in GitHub Actions interface
+
+## 🐳 Docker Support
+
+### Prerequisites for Docker
+
+- **Docker** (version 20.0+ recommended)
+- **Docker Compose** (version 2.0+ recommended)
+
+### Docker Commands
+
+#### Run Tests in Docker (Build + Test)
+
+```bash
+make docker-test
+```
+
+This command automatically:
+
+- Builds the Docker image with latest code
+- Runs all Playwright tests in the container
+- Saves test results and reports to local directories
+
+#### Advanced Docker Usage
+
+```bash
+# Use Docker Compose for orchestrated testing
+docker-compose up --build playwright-tests
+
+# Start report server (optional)
+docker-compose up --build report-server
+```
+
+Then open http://localhost:9323 to view test reports.
+
+### Docker Architecture & Security
+
+- **Base Image**: `mcr.microsoft.com/playwright:v1.48.0-focal` (matches npm package version)
+- **Optimized builds**: Efficient caching and minimal layers
+- **Volume mounting**: Test results and reports are persisted locally
+- **Environment consistency**: Same runtime as CI/CD pipeline
+- **🔒 Secure**: `.env` files excluded from Docker images (see `.dockerignore`)
+
+#### Environment Variable Security
+
+**✅ Secure Approach (Current):**
+
+```bash
+# .env files are in .dockerignore - never copied to Docker images
+# Environment variables passed at runtime:
+docker run -e BASE_URL=https://custom.url -e TEST_TIMEOUT=60000 playwright-e2e-tests
+
+# Or use docker-compose with host environment variables:
+BASE_URL=https://custom.url docker-compose up
+```
+
+**❌ Insecure Approach (Avoided):**
+
+- `.env` files baked into Docker images
+- Sensitive data exposed in image layers
+- Secrets accessible to anyone with image access
+
+**⚠️ Current Security Level:**
+
+- Environment variables visible in running containers (`docker exec`, `printenv`)
+- Acceptable for test configuration (URLs, timeouts)
+- **Not suitable for real secrets** (API keys, passwords)
+- For production secrets, use Docker Secrets or external secret management
+
+### Benefits of Docker
+
+- ✅ **Consistent Environment**: Same test environment across all machines
+- ✅ **No Local Dependencies**: No need to install browsers locally
+- ✅ **CI/CD Ready**: Easy integration with Docker-based CI systems
+- ✅ **Isolation**: Tests run in isolated containers
+- ✅ **Scalability**: Easy horizontal scaling for parallel test execution
 
 ## 📊 Test Reports
 
 After running tests, you can view detailed reports:
 
 ```bash
-make report
+npx playwright show-report
 ```
 
 This will open an interactive HTML report showing:
 
-- Test results and status
-- Screenshots and videos of failures
-- Performance metrics
-- Timeline of test execution
+- ✅ Test results and status
+- 📸 Screenshots and videos of failures
+- ⏱️ Performance metrics and timing
+- 📋 Timeline of test execution
 
 ## 🏗️ Test Categories
 
