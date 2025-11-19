@@ -101,15 +101,6 @@ npx playwright show-report  # Playwright HTML report
 make allure-open            # Allure HTML report (if generated)
 ```
 
-### **Docker Reports (Live Servers)**
-
-```bash
-# After running Docker tests
-open http://localhost:9001   # E2E Allure reports
-open http://localhost:9002   # API Allure reports
-open http://localhost:3000   # API server health endpoint
-```
-
 ---
 
 ## 🎯 **Test Suite Overview**
