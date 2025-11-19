@@ -203,4 +203,13 @@ coverage/
 
 # Allure reports
 allure-results/
+allure-results-api/
 allure-report/
+allure-report-api/
+
+# Jest configuration files (generated during CI)
+jest.allure.config.js
+
+# Test coverage reports
+coverage/
+coverage-api/
