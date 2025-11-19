@@ -4,8 +4,11 @@ FROM mcr.microsoft.com/playwright:v1.48.0-focal
 # Set working directory
 WORKDIR /app
 
-# Set environment variables
+# Set default environment variables
 ENV CI=true
+ENV BASE_URL=https://crypto.com/exchange/trade/BTC_USD
+ENV TEST_TIMEOUT=30000
+ENV HEADLESS=true
 
 # Copy package files
 COPY package*.json ./
@@ -15,9 +18,6 @@ RUN npm ci --ignore-scripts
 
 # Copy source code
 COPY . .
-
-# Copy environment example if no .env exists
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
 # Install Playwright browsers (they should already be in the base image)
 RUN npx playwright install --with-deps

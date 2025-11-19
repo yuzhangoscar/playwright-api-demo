@@ -9,6 +9,9 @@ services:
       - ./playwright-report:/app/playwright-report
     environment:
       - CI=true
+      - BASE_URL=${BASE_URL:-https://crypto.com/exchange/trade/BTC_USD}
+      - TEST_TIMEOUT=${TEST_TIMEOUT:-30000}
+      - HEADLESS=${HEADLESS:-true}
     networks:
       - playwright-network
 

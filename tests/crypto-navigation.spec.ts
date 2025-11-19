@@ -8,7 +8,7 @@ test.describe('Crypto.com Exchange Navigation Tests', () => {
       // Dismiss any cookie banners
       await dismissCookieBanner();
       await waitForPageLoad();
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(1000);
     } catch (error) {
       console.log(`Setup error: ${error instanceof Error ? error.message : String(error)}`);
       // Don't fail the test if setup has minor issues

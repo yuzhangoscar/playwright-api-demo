@@ -260,12 +260,39 @@ docker-compose up --build report-server
 
 Then open http://localhost:9323 to view test reports.
 
-### Docker Architecture
+### Docker Architecture & Security
 
 - **Base Image**: `mcr.microsoft.com/playwright:v1.48.0-focal` (matches npm package version)
 - **Optimized builds**: Efficient caching and minimal layers
 - **Volume mounting**: Test results and reports are persisted locally
 - **Environment consistency**: Same runtime as CI/CD pipeline
+- **🔒 Secure**: `.env` files excluded from Docker images (see `.dockerignore`)
+
+#### Environment Variable Security
+
+**✅ Secure Approach (Current):**
+
+```bash
+# .env files are in .dockerignore - never copied to Docker images
+# Environment variables passed at runtime:
+docker run -e BASE_URL=https://custom.url -e TEST_TIMEOUT=60000 playwright-e2e-tests
+
+# Or use docker-compose with host environment variables:
+BASE_URL=https://custom.url docker-compose up
+```
+
+**❌ Insecure Approach (Avoided):**
+
+- `.env` files baked into Docker images
+- Sensitive data exposed in image layers
+- Secrets accessible to anyone with image access
+
+**⚠️ Current Security Level:**
+
+- Environment variables visible in running containers (`docker exec`, `printenv`)
+- Acceptable for test configuration (URLs, timeouts)
+- **Not suitable for real secrets** (API keys, passwords)
+- For production secrets, use Docker Secrets or external secret management
 
 ### Benefits of Docker
 
