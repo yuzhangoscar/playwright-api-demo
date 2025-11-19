@@ -1,4 +1,4 @@
-.PHONY: help setup test lint format docker-test clean
+.PHONY: help setup test test-allure lint format docker-test clean allure-generate allure-serve allure-open
 
 # Default target
 help: ## Show this help message
@@ -11,6 +11,18 @@ setup: ## Complete setup: install dependencies and browsers
 
 test: ## Run all tests
 	npm test
+
+test-allure: ## Run tests with Allure reporter
+	npm run test:allure
+
+allure-generate: ## Generate Allure report
+	npm run allure:generate
+
+allure-serve: ## Serve Allure report (auto-opens browser)
+	npm run allure:serve
+
+allure-open: ## Open existing Allure report
+	npm run allure:open
 
 lint: ## Run linting and formatting checks
 	npm run lint

@@ -18,6 +18,10 @@
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
     "build": "tsc",
+    "test:allure": "playwright test --reporter=allure-playwright",
+    "allure:generate": "allure generate allure-results --clean -o allure-report",
+    "allure:serve": "allure serve allure-results",
+    "allure:open": "allure open allure-report",
     "prepare": "husky"
   },
   "keywords": [
@@ -49,6 +53,8 @@
     "@types/node": "^24.10.1",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
+    "allure-commandline": "^2.34.1",
+    "allure-playwright": "^3.4.2",
     "dotenv": "^17.2.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",

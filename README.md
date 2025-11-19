@@ -15,6 +15,8 @@
 | Module                               | Version  | Purpose                          |
 | ------------------------------------ | -------- | -------------------------------- |
 | **@playwright/test**                 | ^1.48.0  | Modern web testing framework     |
+| **allure-playwright**                | ^3.0.0   | Allure reporting for Playwright  |
+| **allure-commandline**               | ^2.25.0  | Allure report generation CLI     |
 | **typescript**                       | ^5.9.3   | TypeScript language support      |
 | **dotenv**                           | ^17.2.3  | Environment variable management  |
 | **eslint**                           | ^8.57.1  | JavaScript/TypeScript linting    |
@@ -141,17 +143,25 @@ make help
 
 - `make setup` - Complete project setup (install dependencies and browsers)
 - `make test` - Run all Playwright tests
+- `make test-allure` - Run tests with Allure reporting
+- `make allure-generate` - Generate Allure HTML report
+- `make allure-serve` - Generate and serve Allure report (auto-opens browser)
+- `make allure-open` - Open existing Allure report
 - `make lint` - Run ESLint and Prettier checks
 - `make format` - Format code with Prettier
 - `make docker-test` - Run tests in Docker container
-- `make clean` - Clean generated files and reinstall dependencies
-
-## 🧪 Running Tests
+- `make clean` - Clean generated files and reinstall dependencies## 🧪 Running Tests
 
 ### Run all tests locally
 
 ```bash
 make test
+```
+
+### Run tests with Allure reporting
+
+```bash
+make test-allure
 ```
 
 ### Run tests in Docker
@@ -170,6 +180,59 @@ npx playwright test tests/crypto-navigation.spec.ts
 
 ```bash
 npx playwright show-report
+```
+
+## 📊 Allure Test Reports
+
+### Local Allure Reports
+
+#### Generate and View Allure Report
+
+```bash
+# Run tests with Allure reporter
+make test-allure
+
+# Generate HTML report
+make allure-generate
+
+# Open the report in browser
+make allure-open
+
+# Or generate and serve in one command (auto-opens browser)
+make allure-serve
+```
+
+#### Allure Report Features
+
+- 📈 **Test Trends**: Historical test execution trends
+- 🏷️ **Categorization**: Tests organized by Epic, Feature, Story
+- 📝 **Detailed Steps**: Step-by-step test execution breakdown
+- 🔗 **Attachments**: Screenshots, logs, and JSON data
+- ⏱️ **Performance**: Test duration and timing analysis
+- 📊 **Statistics**: Pass/fail ratios and test distribution
+
+### GitHub Actions Integration
+
+#### Automated Report Generation
+
+- ✅ **Every CI Run**: Allure reports generated automatically
+- 📁 **Artifact Upload**: Reports available as downloadable artifacts
+- 🌐 **GitHub Pages**: Reports deployed to GitHub Pages (main branch)
+- 🔗 **Direct Access**: View reports at `https://[username].github.io/[repo]/allure-reports/[run-number]`
+
+#### Accessing Reports in GitHub Actions
+
+1. **Artifacts Tab**: Download `allure-report` artifact from any workflow run
+2. **GitHub Pages**: Visit the deployed report URL (main branch only)
+3. **Summary**: Key metrics shown in workflow summary
+
+#### Report Structure
+
+```
+allure-reports/
+├── [run-number-1]/     # Latest run
+├── [run-number-2]/     # Previous run
+└── [run-number-3]/     # Older runs
 ```
 
 ## 🔍 Code Quality & Linting
