@@ -15,6 +15,9 @@ test: ## Run all tests
 test-allure: ## Run tests with Allure reporter
 	npm run test:allure
 
+test-allure-html: ## Run tests and generate HTML report in one step
+	npm run test:allure && npm run allure:generate && npm run allure:open
+
 allure-generate: ## Generate Allure report
 	npm run allure:generate
 
@@ -35,6 +38,9 @@ docker-test: ## Run tests in Docker container
 	docker build -t playwright-e2e-tests .
 	docker run --rm -v $(PWD)/test-results:/app/test-results -v $(PWD)/playwright-report:/app/playwright-report -v $(PWD)/allure-results:/app/allure-results playwright-e2e-tests
 
+docker-test-html: ## Run Docker tests and generate HTML Allure report
+	make docker-test && npm run allure:generate && npm run allure:open
+
 clean: ## Clean generated files and dependencies
-	rm -rf node_modules package-lock.json test-results/ playwright-report/ blob-report/
+	rm -rf node_modules package-lock.json test-results/ playwright-report/ blob-report/ allure-results/ allure-report/
 	npm install
