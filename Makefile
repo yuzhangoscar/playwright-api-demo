@@ -1,64 +1,82 @@
-.PHONY: help setup test test-allure test-accessibility test-wcag-basic test-wcag test-wcag-all test-wcag-modal accessibility-report lint format docker-test clean allure-generate allure-serve allure-open
+.PHONY: help setup test test-allure test-accessibility lint lint-fix format docker-test-e2e docker-test-e2e-serve docker-test-api docker-test-wcag docker-test-all docker-reports docker-clean allure-generate allure-serve allure-open clean
 
 # Default target
 help: ## Show this help message
-	@echo "Available commands:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo "Essential Commands:"
+	@echo ""
+	@echo "🔧 Setup & Development:"
+	@grep -E '^(setup|lint|lint-fix|format|clean):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "🧪 Local Testing:"
+	@grep -E '^(test|test-allure|test-accessibility):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "🐳 Docker Testing:"
+	@grep -E '^(docker-test-e2e|docker-test-e2e-serve|docker-test-api|docker-test-wcag|docker-test-all|docker-reports|docker-clean):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "📊 Allure Reports:"
+	@grep -E '^(allure-generate|allure-serve|allure-open):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-setup: ## Complete setup: install dependencies and browsers
+# 🔧 Setup & Development
+setup: ## Complete project setup
 	npm install
 	npx playwright install
 
-test: ## Run all tests
-	npm test
-
-test-allure: ## Run tests with Allure reporter
-	npm run test:allure
-
-test-allure-html: ## Run tests and generate HTML report in one step
-	npm run test:allure && npm run allure:generate && npm run allure:open
-
-test-accessibility: ## Run all accessibility tests
-	npm run test:accessibility
-
-test-wcag-basic: ## Run basic WCAG 2.1 AA compliance test
-	npm run test:wcag:basic
-
-test-wcag: ## Run WCAG 2.1 Level A & AA compliance tests
-	npm run test:wcag
-
-test-wcag-all: ## Run complete WCAG 2.1/2.2 test suite (A, AA, AAA)
-	npm run test:wcag:all
-
-test-wcag-modal: ## Test modal dismissal functionality
-	npm run test:wcag:modal
-
-accessibility-report: ## Open accessibility test report
-	npx playwright show-report accessibility-report
-
-allure-generate: ## Generate Allure report
-	npm run allure:generate
-
-allure-serve: ## Serve Allure report (auto-opens browser)
-	npm run allure:serve
-
-allure-open: ## Open existing Allure report
-	npm run allure:open
-
-lint: ## Run linting and formatting checks
+lint: ## Run ESLint and Prettier checks  
 	npm run lint
 	npm run format:check
 
-format: ## Format code with Prettier
+lint-fix: ## Auto-fix ESLint and Prettier issues
+	npm run lint:fix
 	npm run format
 
-docker-test: ## Run tests in Docker container
-	docker build -t playwright-e2e-tests .
-	docker run --rm -v $(PWD)/test-results:/app/test-results -v $(PWD)/playwright-report:/app/playwright-report -v $(PWD)/allure-results:/app/allure-results playwright-e2e-tests
+format: ## Auto-format code with Prettier
+	npm run format
 
-docker-test-html: ## Run Docker tests and generate HTML Allure report
-	make docker-test && npm run allure:generate && npm run allure:open
-
-clean: ## Clean generated files and dependencies
-	rm -rf node_modules package-lock.json test-results/ playwright-report/ blob-report/ allure-results/ allure-report/ accessibility-report/ accessibility-results.json accessibility-results.xml
+clean: ## Clean generated files and reinstall
+	rm -rf node_modules package-lock.json test-results/ test-results-e2e/ test-results-wcag/ playwright-report/ allure-results/ allure-report/ accessibility-report/ accessibility-results.json accessibility-results.xml
 	npm install
+
+# 🧪 Local Testing
+test: ## Run all E2E tests locally
+	npm test
+
+test-allure: ## Run tests with Allure reporting
+	npm run test:allure
+
+test-accessibility: ## Run WCAG accessibility tests
+	npm run test:accessibility
+
+# 🐳 Docker Testing (Recommended)
+docker-test-e2e: ## Run E2E tests in Docker (generates Allure HTML)
+	docker-compose up --build e2e-tests
+
+docker-test-e2e-serve: ## Run E2E tests + serve report at :9001
+	docker-compose up --build e2e-tests
+	@echo "Starting Allure report server at http://localhost:9001"
+	docker-compose up --build e2e-allure-server
+
+docker-test-api: ## Run API server tests in Docker
+	docker-compose up --build api-tests
+
+docker-test-wcag: ## Run WCAG accessibility tests in Docker
+	docker-compose up --build wcag-tests
+
+docker-test-all: ## Run all test suites in Docker
+	docker-compose up --build e2e-tests api-tests wcag-tests
+
+docker-reports: ## Start all report servers (E2E: :9001, API: :9002)
+	docker-compose up --build e2e-allure-server api-allure-server
+
+docker-clean: ## Clean Docker containers and volumes
+	docker-compose down -v
+	docker system prune -f
+
+# 📊 Allure Reports
+allure-generate: ## Generate HTML report from results
+	npm run allure:generate
+
+allure-serve: ## Generate and auto-open report in browser
+	npm run allure:serve
+
+allure-open: ## Open existing HTML report
+	npm run allure:open

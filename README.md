@@ -1,688 +1,196 @@
-# Playwright E2E Tests for Crypto
+# Playwright E2E Testing Framework
 
-[![CI Pipeline](https://github.com/brucechang/playwright-e2e-crypto/workflows/CI%20Pipeline/badge.svg)](https://github.com/brucechang/playwright-e2e-crypto/actions/workflows/ci.yml)
-[![Playwright Tests](https://img.shields.io/badge/playwright-^1.48.0-blue)](https://playwright.dev/)
-[![TypeScript](https://img.shields.io/badge/typescript-^5.9.3-blue)](https://www.typescriptlang.org/)
-[![ESLint](https://img.shields.io/badge/eslint-^8.57.1-purple)](https://eslint.org/)
-[![Prettier](https://img.shields.io/badge/prettier-^3.6.2-ff69b4)](https://prettier.io/)
-[![Husky](https://img.shields.io/badge/husky-^9.1.7-green)](https://typicode.github.io/husky/)
-[![Commitlint](https://img.shields.io/badge/commitlint-^20.1.0-orange)](https://commitlint.js.org/)
+## 🏷️ Active Module Versions & Badges
+
+[![Playwright Tests](https://img.shields.io/badge/playwright-1.48.0-blue)](https://playwright.dev/)
+[![TypeScript](https://img.shields.io/badge/typescript-5.9.3-blue)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/node.js-≥16.0.0-green)](https://nodejs.org/)
+[![Allure](https://img.shields.io/badge/allure--playwright-3.4.2-orange)](https://github.com/allure-framework/allure-js)
+[![Axe Core](https://img.shields.io/badge/axe--core-4.11.0-purple)](https://github.com/dequelabs/axe-core)
+[![ESLint](https://img.shields.io/badge/eslint-8.57.1-purple)](https://eslint.org/)
+[![Prettier](https://img.shields.io/badge/prettier-3.6.2-ff69b4)](https://prettier.io/)
+[![Jest](https://img.shields.io/badge/jest-29.7.0-red)](https://jestjs.io/)
+[![Express](https://img.shields.io/badge/express-4.18.2-lightgrey)](https://expressjs.com/)
 [![Docker](https://img.shields.io/badge/docker-supported-blue)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A comprehensive E2E testing framework with Playwright, Allure reporting, and a mock API server for testing scenarios.
+### 📦 Core Dependencies
 
-## 📦 Installed Modules & Versions
+| **Testing Framework** | **Version** | **Accessibility**    | **Version** | **Development** | **Version** |
+| --------------------- | ----------- | -------------------- | ----------- | --------------- | ----------- |
+| @playwright/test      | 1.48.0      | @axe-core/playwright | 4.11.0      | typescript      | 5.9.3       |
+| allure-playwright     | 3.4.2       | axe-core             | 4.11.0      | eslint          | 8.57.1      |
+| allure-commandline    | 2.34.1      |                      |             | prettier        | 3.6.2       |
+| jest                  | 29.7.0      |                      |             | husky           | 9.1.7       |
 
-| Module                               | Version  | Purpose                          |
-| ------------------------------------ | -------- | -------------------------------- |
-| **@playwright/test**                 | ^1.48.0  | Modern web testing framework     |
-| **allure-playwright**                | ^3.0.0   | Allure reporting for Playwright  |
-| **allure-commandline**               | ^2.25.0  | Allure report generation CLI     |
-| **typescript**                       | ^5.9.3   | TypeScript language support      |
-| **dotenv**                           | ^17.2.3  | Environment variable management  |
-| **eslint**                           | ^8.57.1  | JavaScript/TypeScript linting    |
-| **@typescript-eslint/parser**        | ^8.47.0  | TypeScript parser for ESLint     |
-| **@typescript-eslint/eslint-plugin** | ^8.47.0  | TypeScript-specific ESLint rules |
-| **eslint-plugin-playwright**         | ^2.3.0   | Playwright-specific ESLint rules |
-| **prettier**                         | ^3.6.2   | Code formatting                  |
-| **eslint-config-prettier**           | ^10.1.8  | ESLint + Prettier integration    |
-| **eslint-plugin-prettier**           | ^5.5.4   | Prettier as ESLint rule          |
-| **husky**                            | ^9.1.7   | Git hooks management             |
-| **@commitlint/cli**                  | ^20.1.0  | Commit message linting           |
-| **@commitlint/config-conventional**  | ^20.0.0  | Conventional commit rules        |
-| **lint-staged**                      | ^16.2.6  | Pre-commit file linting          |
-| **@types/node**                      | ^24.10.1 | Node.js type definitions         |
-| **ts-node**                          | ^10.9.2  | TypeScript execution engine      |
+| **API Server** | **Version** | **Type Definitions** | **Version** | **Linting & Formatting**         | **Version** |
+| -------------- | ----------- | -------------------- | ----------- | -------------------------------- | ----------- |
+| express        | 4.18.2      | @types/node          | 24.10.1     | @typescript-eslint/parser        | 8.47.0      |
+| cors           | 2.8.5       | @types/express       | 4.17.21     | @typescript-eslint/eslint-plugin | 8.47.0      |
+| helmet         | 7.1.0       | @types/jest          | 29.5.12     | eslint-plugin-playwright         | 2.3.0       |
+| morgan         | 1.10.0      | @types/supertest     | 6.0.2       | eslint-config-prettier           | 10.1.8      |
 
-This project contains end-to-end (E2E) tests for crypto trading platforms using [Playwright](https://playwright.dev/), a modern web testing framework written in **TypeScript** with comprehensive linting and code quality tools.
+---
 
-## 📋 Overview
+## 🚀 Quick Start
 
-This test suite is designed to validate the functionality and user experience of crypto trading platforms through automated browser testing. The tests simulate real user interactions to ensure the application works correctly across different browsers and scenarios.
+A comprehensive E2E testing framework with Playwright, WCAG accessibility testing, Allure reporting, and Docker support for crypto trading platform validation.
 
-## 🎯 Purpose
-
-- **Quality Assurance**: Ensure crypto trading features work as expected
-- **Regression Testing**: Catch breaking changes before they reach production
-- **Cross-Browser Testing**: Verify compatibility across Chrome, Firefox, and Safari
-- **User Journey Validation**: Test critical trading workflows and user paths
-- **Performance Monitoring**: Track application performance metrics
-
-## 🚀 Features
-
-- **Multi-Browser Support**: Tests run on Chromium, Firefox, and WebKit
-- **Mock API Server**: Node.js/Express server with health check and blacklist endpoints
-- **Parallel Execution**: Fast test execution with parallel test runs
-- **AWS Deployment**: CloudFormation templates and EC2 deployment scripts
-- **Visual Testing**: Screenshot comparison and visual regression testing
-- **Mobile Testing**: Responsive design validation on mobile viewports
-- **CI/CD Ready**: Integration with continuous integration pipelines
-
-## 📁 Project Structure
-
-```
-playwright-e2e-crypto/
-├── tests/                    # TypeScript test files
-│   ├── auth/                # Authentication tests
-│   ├── trading/             # Trading functionality tests
-│   ├── portfolio/           # Portfolio management tests
-│   ├── navigation/          # Navigation and UI tests
-│   └── api.test.ts          # API server tests
-├── src/                     # Mock API server source code
-│   ├── server.ts            # Express server main file
-│   ├── routes/              # API route handlers
-│   │   ├── health.ts        # Health check endpoints
-│   │   └── blacklist.ts     # Blacklist management endpoints
-│   └── data/                # Data stores
-│       └── blacklistStore.ts # In-memory blacklist store
-├── deployment/              # AWS deployment scripts
-│   ├── deploy.sh            # EC2 manual deployment
-│   ├── cloudformation.yaml  # Infrastructure as Code
-│   └── cloudformation-deploy.sh # CloudFormation helper
-├── pages/                   # Page Object Model classes (TypeScript)
-├── fixtures/                # Test data and fixtures
-├── utils/                   # Helper functions and utilities (TypeScript)
-├── .husky/                  # Git hooks configuration
-├── playwright.config.ts     # Playwright configuration (TypeScript)
-├── tsconfig.json           # TypeScript configuration
-├── tsconfig.server.json    # Server TypeScript configuration
-├── jest.config.js          # Jest configuration for API tests
-├── .eslintrc.js            # ESLint configuration
-├── .prettierrc             # Prettier configuration
-├── .commitlintrc.js        # Commitlint configuration
-├── Makefile                # Make commands
-├── API_README.md           # API server documentation
-└── package.json            # Project dependencies and scripts
-```
-
-## 🛠️ Prerequisites
-
-- **Node.js** (version 16 or higher)
-- **npm** or **yarn** package manager
-
-## 📦 Installation
-
-1. Clone the repository:
+### 📦 Prerequisites & Installation
 
 ```bash
+# Prerequisites: Node.js ≥16.0.0, Docker (optional)
 git clone <repository-url>
-cd playwright-e2e-crypto
+cd playwright-api-demo
+make setup  # Installs dependencies and Playwright browsers
 ```
 
-2. Complete setup (install dependencies and browsers):
+---
+
+## 🔧 Essential Make Commands
+
+### 🧪 **Local Testing**
 
 ```bash
-make setup
+make test                    # Run all E2E tests locally
+make test-allure            # Run tests with Allure reporting
+make test-accessibility     # Run WCAG accessibility tests
 ```
 
-Or run individual steps:
+### 🐳 **Docker Testing (Recommended)**
 
 ```bash
-make setup  # Complete setup: install dependencies and browsers
+make docker-test-e2e        # Run E2E tests in Docker (generates Allure HTML)
+make docker-test-api        # Run API server tests in Docker
+make docker-test-wcag       # Run WCAG accessibility tests in Docker
+make docker-test-all        # Run all test suites in Docker
 ```
 
-## 🖥️ Mock API Server
-
-This project includes a Node.js/Express mock API server for testing scenarios with health check and blacklist endpoints.
-
-### Quick Start
+### 📊 **Allure Reports**
 
 ```bash
-# Start development server with hot reloading
-npm run api:dev
+# Local Allure Reports
+make allure-generate        # Generate HTML report from results
+make allure-serve          # Generate and auto-open report in browser
+make allure-open           # Open existing HTML report
 
-# Build and start production server
-npm run api:build
-npm run api:start
-
-# Run API tests
-npm run api:test
+# Docker Allure Reports (with live server)
+make docker-test-e2e-serve  # Run E2E tests + serve report at :9001
+make docker-reports         # Start all report servers (E2E: :9001, API: :9002)
 ```
 
-### API Endpoints
-
-- **Health Check**: `GET /api/health` - Basic health status
-- **Detailed Health**: `GET /api/health/detailed` - System metrics
-- **Blacklist**: `GET /api/blacklist` - Get all blacklisted entries
-- **Check Name**: `GET /api/blacklist/check/{name}` - Check if name is blacklisted
-- **Add Entry**: `POST /api/blacklist` - Add new blacklist entry
-- **Remove Entry**: `DELETE /api/blacklist/{name}` - Remove blacklist entry
-
-### AWS Deployment
-
-Deploy to AWS EC2 using CloudFormation:
+### 🔧 **Development & Maintenance**
 
 ```bash
-# Deploy infrastructure and application
-./deployment/cloudformation-deploy.sh playwright-api-stack my-key-pair
-
-# Or manual deployment to existing EC2
-./deployment/deploy.sh <EC2_IP> <SSH_KEY_PATH>
+make setup                  # Complete project setup
+make lint                   # Run ESLint and Prettier checks
+make format                 # Auto-format code with Prettier
+make clean                  # Clean generated files and reinstall
+make docker-clean          # Clean Docker containers and volumes
 ```
 
-For detailed API documentation, see [API_README.md](./API_README.md).
+---
 
-For AWS deployment setup and configuration, see [AWS_DEPLOYMENT.md](./AWS_DEPLOYMENT.md).
+## 📊 **Accessing Test Reports**
 
-## 🔧 Configuration
-
-Create a `.env` file in the root directory with your test environment variables:
+### **Local Reports**
 
 ```bash
-cp .env.example .env
+# After running tests locally
+npx playwright show-report  # Playwright HTML report
+make allure-open            # Allure HTML report (if generated)
 ```
 
-Then edit `.env` with your configuration:
+### **Docker Reports (Live Servers)**
 
-```env
-# Base URL for the application
+```bash
+# After running Docker tests
+open http://localhost:9001   # E2E Allure reports
+open http://localhost:9002   # API Allure reports
+open http://localhost:3000   # API server health endpoint
+```
+
+---
+
+## 🎯 **Test Suite Overview**
+
+### 🎭 **E2E Tests**
+
+- **Target**: Crypto.com exchange navigation and functionality
+- **Browser**: Chromium (configurable for Firefox, WebKit)
+- **Reports**: Playwright HTML + Allure with screenshots/videos
+
+### ♿ **WCAG Accessibility Tests**
+
+- **Standards**: WCAG 2.1 Level A, AA + WCAG 2.2 Level AAA
+- **Features**: Automated modal dismissal, multi-browser support
+- **Tools**: axe-core integration with detailed violation reports
+
+### 🚀 **API Server Tests**
+
+- **Framework**: Jest with TypeScript
+- **Endpoints**: Health checks, blacklist management
+- **Coverage**: Full test coverage with Allure reporting
+
+---
+
+## 🐳 **Docker Architecture**
+
+### **Separated Test Suites**
+
+| Service        | Image                      | Purpose                   | Report Port |
+| -------------- | -------------------------- | ------------------------- | ----------- |
+| **e2e-tests**  | `playwright:v1.48.0-focal` | E2E functionality testing | :9001       |
+| **api-tests**  | `node:22-alpine`           | API server testing        | :9002       |
+| **wcag-tests** | `playwright:v1.48.0-focal` | Accessibility compliance  | -           |
+
+### **Docker Benefits**
+
+- ✅ **Consistent Environment**: Same runtime across all machines
+- ✅ **Automatic Report Generation**: HTML reports generated in containers
+- ✅ **Live Report Servers**: Nginx servers for interactive report viewing
+- ✅ **Complete Isolation**: Independent test suites with separate volumes
+
+---
+
+## 📁 **Project Structure**
+
+```
+playwright-api-demo/
+├── tests/                   # E2E and accessibility test files
+├── src/                     # Mock API server (Express.js)
+├── docker/                  # Separated Dockerfiles for each test suite
+├── playwright.config.ts     # Main Playwright configuration
+├── playwright.accessibility.config.ts  # WCAG testing configuration
+├── Makefile                 # Essential commands and workflows
+└── docker-compose.yml       # Multi-service Docker orchestration
+```
+
+---
+
+## 🛠️ **Configuration**
+
+Create `.env` file for custom settings:
+
+```bash
 BASE_URL=https://crypto.com/exchange/trade/BTC_USD
-
-# Test Configuration
 TEST_TIMEOUT=30000
-TEST_RETRIES=2
 HEADLESS=true
-
-# Browser Configuration
-DEFAULT_BROWSER=chromium
-VIEWPORT_WIDTH=1920
-VIEWPORT_HEIGHT=1080
-
-# Reporting
-REPORT_TITLE="Crypto.com E2E Test Results"
 ```
 
-## 🔧 Available Commands
+---
 
-This project uses a simplified Makefile for essential commands. To see all available commands:
+## 📚 **Key Features**
 
-```bash
-make help
-```
+- 🎯 **Multi-Browser Testing**: Chromium, Firefox, WebKit support
+- ♿ **WCAG Compliance**: Comprehensive accessibility testing
+- 📊 **Rich Reporting**: Interactive Allure reports with trends and attachments
+- 🐳 **Docker Ready**: Containerized testing with isolated environments
+- 🔧 **TypeScript**: Full type safety with strict configuration
+- 🚀 **CI/CD Integration**: GitHub Actions with artifact management
 
-### Essential Commands
+---
 
-- `make setup` - Complete project setup (install dependencies and browsers)
-- `make test` - Run all Playwright tests
-- `make test-allure` - Run tests with Allure reporting
-- `make allure-generate` - Generate Allure HTML report
-- `make allure-serve` - Generate and serve Allure report (auto-opens browser)
-- `make allure-open` - Open existing Allure report
-- `make lint` - Run ESLint and Prettier checks
-- `make format` - Format code with Prettier
-- `make docker-test` - Run tests in Docker container
-- `make clean` - Clean generated files and reinstall dependencies## 🧪 Running Tests
+## 📄 **License**
 
-### Run all tests locally
-
-```bash
-make test
-```
-
-### Run tests with Allure reporting
-
-```bash
-make test-allure
-```
-
-### Run tests in Docker
-
-```bash
-make docker-test
-```
-
-### Run specific test files (advanced)
-
-```bash
-npx playwright test tests/crypto-navigation.spec.ts
-```
-
-### View test reports
-
-```bash
-npx playwright show-report
-```
-
-## ♿ WCAG Accessibility Testing
-
-This project includes comprehensive WCAG (Web Content Accessibility Guidelines) compliance testing using axe-core integration with Playwright.
-
-### Quick Start - WCAG Testing
-
-```bash
-# Run basic WCAG 2.1 AA compliance test
-make test-wcag-basic
-
-# Run complete WCAG test suite (2.1 Level A, AA + 2.2 Level AAA)
-make test-wcag-all
-
-# View accessibility report
-make accessibility-report
-```
-
-### Available WCAG Commands
-
-- `make test-wcag-basic` - Single critical WCAG 2.1 AA test
-- `make test-wcag` - Full WCAG 2.1 Level A & AA compliance tests
-- `make test-wcag-all` - Complete WCAG 2.1/2.2 suite (Level A, AA, AAA)
-- `make test-wcag-modal` - Test modal dismissal functionality only
-- `make test-accessibility` - Run all accessibility tests
-- `make accessibility-report` - Open accessibility test report
-
-### WCAG Testing Features
-
-- ✅ **WCAG 2.1 Level A & AA Compliance**: Core accessibility standards
-- ✅ **WCAG 2.2 Level AAA Testing**: Advanced accessibility requirements
-- ✅ **Multi-Browser Support**: Chrome, Firefox, Safari, Mobile, Tablet
-- ✅ **Automated Modal Dismissal**: Handles cookie banners and tutorial popups
-- ✅ **Detailed Violation Reports**: HTML reports with specific fix recommendations
-- ✅ **High-Contrast Mode Testing**: Validates accessibility in high-contrast themes
-- ✅ **Keyboard Navigation**: Tests for proper keyboard accessibility
-
-### WCAG Test Categories
-
-#### Critical Issues (Level A)
-
-- Missing alt attributes on images
-- Form elements without proper labels
-- Missing button text or ARIA labels
-- Keyboard navigation problems
-
-#### Standard Issues (Level AA)
-
-- Color contrast ratios below 4.5:1
-- Missing focus indicators
-- Improper heading structure
-- Insufficient text spacing
-
-#### Advanced Issues (Level AAA)
-
-- Color contrast ratios below 7:1
-- Advanced keyboard navigation
-- Enhanced visual focus indicators
-- Comprehensive screen reader support
-
-### Understanding WCAG Reports
-
-After running WCAG tests, view detailed reports:
-
-```bash
-# Open interactive HTML accessibility report
-make accessibility-report
-
-# Or use Playwright command directly
-npx playwright show-report accessibility-report
-```
-
-#### Report Contents
-
-- 🔍 **Violation Details**: Specific WCAG rules violated with element selectors
-- 📸 **Screenshots**: Visual context for accessibility issues
-- 🏷️ **WCAG References**: Direct links to official WCAG documentation
-- 🎯 **Fix Recommendations**: Specific suggestions for resolving violations
-- 📊 **Impact Levels**: Critical, Serious, Moderate, and Minor issues categorized
-
-### Manual Accessibility Testing
-
-For comprehensive accessibility validation, combine automated WCAG tests with:
-
-- **Screen Reader Testing**: NVDA, JAWS, VoiceOver
-- **Keyboard Navigation**: Tab order, focus management, shortcuts
-- **High Contrast Mode**: Windows High Contrast, browser extensions
-- **Color Blindness**: Deuteranopia, Protanopia, Tritanopia simulation
-- **Mobile Accessibility**: Voice control, switch navigation, magnification
-
-### WCAG Configuration
-
-Accessibility tests use a specialized configuration:
-
-- **Config File**: `playwright.accessibility.config.ts`
-- **Test Files**: `tests/accessibility-*.spec.ts`
-- **Setup**: `tests/accessibility-setup.ts`
-- **Documentation**: `ACCESSIBILITY.md`
-
-For detailed accessibility testing documentation, see [ACCESSIBILITY.md](./ACCESSIBILITY.md).
-
-## 📊 Allure Test Reports
-
-### Local Allure Reports
-
-#### Generate and View Allure Report
-
-```bash
-# Run tests with Allure reporter
-make test-allure
-
-# Generate HTML report
-make allure-generate
-
-# Open the report in browser
-make allure-open
-
-# Or generate and serve in one command (auto-opens browser)
-make allure-serve
-```
-
-#### Allure Report Features
-
-- 📈 **Test Trends**: Historical test execution trends
-- 🏷️ **Categorization**: Tests organized by Epic, Feature, Story
-- 📝 **Detailed Steps**: Step-by-step test execution breakdown
-- 🔗 **Attachments**: Screenshots, logs, and JSON data
-- ⏱️ **Performance**: Test duration and timing analysis
-- 📊 **Statistics**: Pass/fail ratios and test distribution
-
-### GitHub Actions Integration
-
-#### Automated Report Generation
-
-- ✅ **Every CI Run**: Allure reports generated automatically
-- 📁 **Artifact Upload**: Reports available as downloadable artifacts
-- 🌐 **GitHub Pages**: Reports deployed to GitHub Pages (main branch)
-- 🔗 **Direct Access**: View reports at `https://[username].github.io/[repo]/allure-reports/[run-number]`
-
-#### Accessing Reports in GitHub Actions
-
-1. **Artifacts Tab**: Download `allure-report` artifact from any workflow run
-2. **GitHub Pages**: Visit the deployed report URL (main branch only)
-3. **Summary**: Key metrics shown in workflow summary
-
-#### Report Structure
-
-```
-allure-reports/
-├── [run-number-1]/     # Latest run
-├── [run-number-2]/     # Previous run
-└── [run-number-3]/     # Older runs
-```
-
-## 🔍 Code Quality & Linting
-
-### Run linting and format checks
-
-```bash
-make lint
-```
-
-### Format code automatically
-
-```bash
-make format
-```
-
-## 🚀 CI/CD Pipeline
-
-This project includes a comprehensive GitHub Actions CI/CD pipeline that runs:
-
-### Workflow Overview
-
-The CI pipeline consists of three main jobs:
-
-1. **Code Quality Check** (`lint`): Validates code style, formatting, and TypeScript types
-2. **Docker E2E Tests** (`docker-tests`): Runs Playwright tests inside a Docker container
-3. **Test Summary** (`test-summary`): Provides a consolidated report of all test results
-
-### Pipeline Features
-
-- ✅ **Streamlined Execution**: Lint checks run first, then Docker E2E tests
-- ✅ **Consistent Environment**: All tests run in Docker for consistency
-- ✅ **Artifact Collection**: Automatically uploads test reports and results
-- ✅ **Smart Triggers**: Runs on PRs and pushes to `main`/`develop` branches
-- ✅ **Comprehensive Coverage**: ESLint, Prettier, TypeScript, and Docker E2E tests
-
-### Local CI Testing
-
-Run the same checks locally before pushing:
-
-```bash
-# Run linting and format checks (same as CI)
-make lint
-
-# Run tests locally
-make test
-
-# Run tests in Docker (same as CI)
-make docker-test
-```
-
-### Viewing Results
-
-- **Test Reports**: Download from Actions artifacts or view in the GitHub interface
-- **Coverage**: Detailed Playwright HTML reports are generated for each run
-- **Logs**: Full test execution logs available in GitHub Actions interface
-
-## 🐳 Docker Support
-
-### Prerequisites for Docker
-
-- **Docker** (version 20.0+ recommended)
-- **Docker Compose** (version 2.0+ recommended)
-
-### Docker Commands
-
-#### Run Tests in Docker (Build + Test)
-
-```bash
-make docker-test
-```
-
-This command automatically:
-
-- Builds the Docker image with latest code
-- Runs all Playwright tests in the container
-- Saves test results, Playwright reports, and **Allure results** to local directories
-- **Maintains consistency** with CI/CD environment (same volume mounts as GitHub Actions)
-
-#### Advanced Docker Usage
-
-```bash
-# Use Docker Compose for orchestrated testing
-docker-compose up --build playwright-tests
-
-# Start report server (optional)
-docker-compose up --build report-server
-```
-
-Then open http://localhost:9323 to view test reports.
-
-### Docker Architecture & Security
-
-- **Base Image**: `mcr.microsoft.com/playwright:v1.48.0-focal` (matches npm package version)
-- **Optimized builds**: Efficient caching and minimal layers
-- **Volume mounting**: Test results, Playwright reports, and Allure results are persisted locally
-- **Environment consistency**: Same runtime as CI/CD pipeline
-- **🔒 Secure**: `.env` files excluded from Docker images (see `.dockerignore`)
-
-#### Environment Variable Security
-
-**✅ Secure Approach (Current):**
-
-```bash
-# .env files are in .dockerignore - never copied to Docker images
-# Environment variables passed at runtime:
-docker run -e BASE_URL=https://custom.url -e TEST_TIMEOUT=60000 playwright-e2e-tests
-
-# Or use docker-compose with host environment variables:
-BASE_URL=https://custom.url docker-compose up
-```
-
-**❌ Insecure Approach (Avoided):**
-
-- `.env` files baked into Docker images
-- Sensitive data exposed in image layers
-- Secrets accessible to anyone with image access
-
-**⚠️ Current Security Level:**
-
-- Environment variables visible in running containers (`docker exec`, `printenv`)
-- Acceptable for test configuration (URLs, timeouts)
-- **Not suitable for real secrets** (API keys, passwords)
-- For production secrets, use Docker Secrets or external secret management
-
-### Benefits of Docker
-
-- ✅ **Consistent Environment**: Same test environment across all machines
-- ✅ **No Local Dependencies**: No need to install browsers locally
-- ✅ **CI/CD Ready**: Easy integration with Docker-based CI systems
-- ✅ **Isolation**: Tests run in isolated containers
-- ✅ **Scalability**: Easy horizontal scaling for parallel test execution
-
-## 📊 Test Reports
-
-After running tests, you can view detailed reports:
-
-```bash
-npx playwright show-report
-```
-
-This will open an interactive HTML report showing:
-
-- ✅ Test results and status
-- 📸 Screenshots and videos of failures
-- ⏱️ Performance metrics and timing
-- 📋 Timeline of test execution
-
-## 🏗️ Test Categories
-
-### Authentication Tests
-
-- User login/logout functionality
-- Password reset flows
-- Session management
-- Multi-factor authentication
-
-### Trading Tests
-
-- Market data display
-- Order placement and execution
-- Position management
-- Trading history
-
-### Portfolio Tests
-
-- Account balance verification
-- Asset allocation views
-- Performance tracking
-- Transaction history
-
-### Navigation Tests
-
-- Menu functionality
-- Page transitions
-- Responsive design
-- Accessibility compliance
-
-## 📝 Writing Tests
-
-Tests are written in **TypeScript** and organized using the Page Object Model pattern. Example test structure:
-
-```typescript
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
-import { TradingPage } from '../pages/TradingPage';
-
-test('should place a buy order successfully', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  const tradingPage = new TradingPage(page);
-
-  await loginPage.goto();
-  await loginPage.login('demo-user', 'demo-password');
-  await tradingPage.placeBuyOrder('AAPL', 10);
-
-  await expect(tradingPage.orderConfirmation).toBeVisible();
-});
-```
-
-### TypeScript Configuration
-
-The project uses strict TypeScript settings with:
-
-- **Strict type checking** enabled
-- **Path mapping** for clean imports (`@pages/*`, `@utils/*`, etc.)
-- **ESLint integration** for code quality
-- **Prettier integration** for consistent formatting
-
-## 🔍 Best Practices
-
-- **Stable Selectors**: Use data-testid attributes for reliable element selection
-- **Independent Tests**: Each test should be self-contained and not depend on others
-- **Clean State**: Always start tests from a known, clean state
-- **Explicit Waits**: Use proper waiting strategies instead of fixed delays
-- **Error Handling**: Include proper error handling and meaningful assertions
-- **TypeScript**: Use proper typing for all variables and functions
-- **Code Quality**: Follow ESLint rules and Prettier formatting
-
-## 🔧 Git Workflow & Code Quality
-
-This project enforces code quality through automated tools:
-
-### Pre-commit Hooks (Husky)
-
-- **Lint-staged**: Automatically lints and formats staged files
-- **ESLint**: Checks for code quality issues
-- **Prettier**: Ensures consistent code formatting
-- **TypeScript**: Validates type correctness
-
-### Commit Message Standards
-
-Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-```bash
-feat: add new login test for multi-factor authentication
-fix: resolve flaky test in trading module
-docs: update README with new testing guidelines
-test: add edge cases for portfolio calculations
-```
-
-**Allowed types**: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`, `perf`, `ci`, `build`, `revert`
-
-### Branch Naming Convention
-
-Use descriptive branch names:
-
-- `feature/add-login-tests`
-- `fix/flaky-trading-test`
-- `docs/update-readme`
-- `refactor/page-objects`
-
-## 🐛 Debugging
-
-### Common Issues
-
-- **Timeout Errors**: Increase timeout values or improve waiting strategies
-- **Flaky Tests**: Review element selectors and timing issues
-- **Environment Issues**: Verify test environment configuration
-
-### Debug Tools
-
-- **Playwright Inspector**: Step through tests interactively
-- **Trace Viewer**: Analyze test execution timeline
-- **Screenshots**: Automatic capture on test failures
-
-## 📚 Resources
-
-- [Playwright Documentation](https://playwright.dev/docs/intro)
-- [Crypto.com Exchange](https://crypto.com/exchange)
-- [Test Strategy Guidelines](./docs/test-strategy.md)
-- [Contributing Guide](./CONTRIBUTING.md)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-test`)
-3. Commit your changes (`git commit -am 'Add new trading test'`)
-4. Push to the branch (`git push origin feature/new-test`)
-5. Create a Pull Request
-
-## 📞 Support
-
-For questions or issues related to this test suite:
-
-- Create an issue in this repository
-- Contact the QA team at [qa@company.com]
-- Review existing documentation in the `/docs` folder
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
