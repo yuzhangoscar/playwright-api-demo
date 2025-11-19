@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [ main ]
 
-# Grant Pages permissions needed for deploy-pages action
+# Grant permissions needed for GitHub Pages deployment
 permissions:
   contents: read
   pages: write
@@ -75,18 +75,10 @@ jobs:
           name: allure-report
           path: ./allure-report
 
-      - name: Upload Pages artifact (for GitHub Pages deployment)
-        if: always()
-        uses: actions/upload-pages-artifact@v1
+      - name: Deploy Allure Report to GitHub Pages
+        if: always() && github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: ./allure-report
-
-  deploy_pages:
-    name: Deploy Allure HTML to GitHub Pages
-    needs: test
-    runs-on: ubuntu-latest
-    # run deploy whether tests passed or not so you can still inspect results
-    if: always()
-    steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          destination_dir: allure-reports/${{ github.run_number }}
