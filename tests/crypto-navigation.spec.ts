@@ -20,78 +20,79 @@ test.describe('Crypto.com Exchange Navigation Tests', () => {
     }
   });
 
-  test('should load crypto.com exchange successfully', async ({
-    page,
-    verifyTradingPairLoaded,
-  }) => {
-    await allure.story('Page Loading');
-    await allure.severity('critical');
-    await allure.description(
-      'Verifies that the crypto.com exchange page loads successfully and displays the BTC_USD trading pair'
-    );
-
-    await allure.step('Verify page URL contains crypto.com/exchange', async () => {
-      expect(page.url()).toContain('crypto.com/exchange');
-    });
-
-    await allure.step('Verify BTC_USD trading pair is loaded', async () => {
-      const isPairLoaded = await verifyTradingPairLoaded('BTC_USD');
-      expect(isPairLoaded).toBe(true);
-    });
-  });
-
-  test('should display all major navigation items', async ({
-    page,
-    verifyAllNavigationItemsVisible,
-    getVisibleNavigationItems,
-  }) => {
-    await allure.story('Navigation Visibility');
-    await allure.severity('critical');
-    await allure.description(
-      'Verifies that all major navigation items (Markets, Trade, Bots, etc.) are visible and accessible on the page'
-    );
-
-    await allure.step('Get all visible navigation items', async () => {
-      const visibleItems = await getVisibleNavigationItems();
-      await allure.attachment(
-        'Visible Navigation Items',
-        JSON.stringify(visibleItems),
-        'application/json'
+  test(
+    'should load crypto.com exchange successfully',
+    { tag: '@smoke' },
+    async ({ page, verifyTradingPairLoaded }) => {
+      await allure.story('Page Loading');
+      await allure.severity('critical');
+      await allure.description(
+        'Verifies that the crypto.com exchange page loads successfully and displays the BTC_USD trading pair'
       );
 
-      expect(visibleItems.length).toBeGreaterThan(0);
-      console.log(`Found navigation items: ${visibleItems.join(', ')}`);
-    });
+      await allure.step('Verify page URL contains crypto.com/exchange', async () => {
+        expect(page.url()).toContain('crypto.com/exchange');
+      });
 
-    await allure.step('Verify all navigation items are visible', async () => {
-      const allVisible = await verifyAllNavigationItemsVisible();
+      await allure.step('Verify BTC_USD trading pair is loaded', async () => {
+        const isPairLoaded = await verifyTradingPairLoaded('BTC_USD');
+        expect(isPairLoaded).toBe(true);
+      });
+    }
+  );
 
-      if (!allVisible) {
-        console.log('Not all navigation items are visible. Checking individual items...');
-        const itemStatus: Record<string, string> = {};
+  test(
+    'should display all major navigation items',
+    { tag: '@slow' },
+    async ({ page, verifyAllNavigationItemsVisible, getVisibleNavigationItems }) => {
+      await allure.story('Navigation Visibility');
+      await allure.severity('critical');
+      await allure.description(
+        'Verifies that all major navigation items (Markets, Trade, Bots, etc.) are visible and accessible on the page'
+      );
 
-        const currentVisibleItems = await getVisibleNavigationItems();
-        for (const expectedItem of NAV_BUTTONS_TEXT) {
-          const isVisible = currentVisibleItems.includes(expectedItem);
-          itemStatus[expectedItem] = isVisible ? 'Visible' : 'Not Visible';
-          console.log(`${expectedItem}: ${isVisible ? '✓' : '✗'}`);
-        }
-
+      await allure.step('Get all visible navigation items', async () => {
+        const visibleItems = await getVisibleNavigationItems();
         await allure.attachment(
-          'Navigation Items Status',
-          JSON.stringify(itemStatus),
+          'Visible Navigation Items',
+          JSON.stringify(visibleItems),
           'application/json'
         );
-      }
-    });
 
-    await allure.step('Take reference screenshot', async () => {
-      await page.screenshot({
-        path: 'crypto-com-navigation.png',
-        fullPage: false,
+        expect(visibleItems.length).toBeGreaterThan(0);
+        console.log(`Found navigation items: ${visibleItems.join(', ')}`);
       });
-    });
-  });
+
+      await allure.step('Verify all navigation items are visible', async () => {
+        const allVisible = await verifyAllNavigationItemsVisible();
+
+        if (!allVisible) {
+          console.log('Not all navigation items are visible. Checking individual items...');
+          const itemStatus: Record<string, string> = {};
+
+          const currentVisibleItems = await getVisibleNavigationItems();
+          for (const expectedItem of NAV_BUTTONS_TEXT) {
+            const isVisible = currentVisibleItems.includes(expectedItem);
+            itemStatus[expectedItem] = isVisible ? 'Visible' : 'Not Visible';
+            console.log(`${expectedItem}: ${isVisible ? '✓' : '✗'}`);
+          }
+
+          await allure.attachment(
+            'Navigation Items Status',
+            JSON.stringify(itemStatus),
+            'application/json'
+          );
+        }
+      });
+
+      await allure.step('Take reference screenshot', async () => {
+        await page.screenshot({
+          path: 'crypto-com-navigation.png',
+          fullPage: false,
+        });
+      });
+    }
+  );
 
   test('should be able to hover over navigation items', async ({
     page,
