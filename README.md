@@ -3,6 +3,7 @@
 ## 🏷️ Active Module Versions & Badges
 
 [![Playwright Tests](https://img.shields.io/badge/playwright-1.48.0-blue)](https://playwright.dev/)
+[![Playwright BDD](https://img.shields.io/badge/playwright--bdd-latest-green)](https://github.com/vitalets/playwright-bdd)
 [![TypeScript](https://img.shields.io/badge/typescript-5.9.3-blue)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/node.js-≥16.0.0-green)](https://nodejs.org/)
 [![Allure](https://img.shields.io/badge/allure--playwright-3.4.2-orange)](https://github.com/allure-framework/allure-js)
@@ -19,9 +20,10 @@
 | **Testing Framework** | **Version** | **Accessibility**    | **Version** | **Development** | **Version** |
 | --------------------- | ----------- | -------------------- | ----------- | --------------- | ----------- |
 | @playwright/test      | 1.48.0      | @axe-core/playwright | 4.11.0      | typescript      | 5.9.3       |
-| allure-playwright     | 3.4.2       | axe-core             | 4.11.0      | eslint          | 8.57.1      |
-| allure-commandline    | 2.34.1      |                      |             | prettier        | 3.6.2       |
-| jest                  | 29.7.0      |                      |             | husky           | 9.1.7       |
+| playwright-bdd        | latest      | axe-core             | 4.11.0      | eslint          | 8.57.1      |
+| allure-playwright     | 3.4.2       |                      |             | prettier        | 3.6.2       |
+| allure-commandline    | 2.34.1      |                      |             | husky           | 9.1.7       |
+| jest                  | 29.7.0      |                      |             |                 |             |
 
 | **API Server** | **Version** | **Type Definitions** | **Version** | **Linting & Formatting**         | **Version** |
 | -------------- | ----------- | -------------------- | ----------- | -------------------------------- | ----------- |
@@ -55,6 +57,11 @@ make setup  # Installs dependencies and Playwright browsers
 make test                    # Run all E2E tests locally
 make test-allure            # Run tests with Allure reporting
 make test-accessibility     # Run WCAG accessibility tests
+
+# BDD/Gherkin Testing
+make test-bdd               # Run all BDD tests (Cucumber/Gherkin syntax)
+make test-bdd-headed        # Run BDD tests in headed mode (visible browser)
+make test-bdd-smoke         # Run BDD smoke tests only (@smoke tag)
 
 # Direct Playwright Commands
 npx playwright test --headed   # Run tests in headed mode (visible browser)
@@ -115,6 +122,14 @@ make allure-open            # Allure HTML report (if generated)
 - **Browser**: Chromium (configurable for Firefox, WebKit)
 - **Reports**: Playwright HTML + Allure with screenshots/videos
 
+### 🥒 **BDD/Gherkin Tests**
+
+- **Framework**: playwright-bdd with Cucumber/Gherkin syntax
+- **Features**: Natural language test scenarios in `features/*.feature` files
+- **Step Definitions**: Reuses existing fixture functions without modification
+- **Tags**: `@smoke`, `@slow` for selective test execution
+- **Benefits**: Enhanced readability and business-friendly test documentation
+
 ### ♿ **WCAG Accessibility Tests**
 
 - **Standards**: WCAG 2.1 Level A, AA + WCAG 2.2 Level AAA
@@ -126,6 +141,85 @@ make allure-open            # Allure HTML report (if generated)
 - **Framework**: Jest with TypeScript
 - **Endpoints**: Health checks, blacklist management
 - **Coverage**: Full test coverage with Allure reporting
+
+---
+
+## 🥒 **BDD/Gherkin Testing**
+
+### **Overview**
+
+The project includes comprehensive BDD (Behavior-Driven Development) testing using Cucumber/Gherkin syntax, powered by `playwright-bdd`. This provides natural language test scenarios that are readable by both technical and non-technical stakeholders.
+
+### **Quick Start**
+
+```bash
+# Run all BDD tests
+make test-bdd
+
+# Run BDD tests in headed mode (visible browser)
+make test-bdd-headed
+
+# Run smoke tests only
+make test-bdd-smoke
+
+# Run with specific tags
+make test-bdd TAG=@slow
+```
+
+### **BDD Commands**
+
+| Command                  | Description                        | Example                   |
+| ------------------------ | ---------------------------------- | ------------------------- |
+| `make test-bdd`          | Run all BDD scenarios              | All feature tests         |
+| `make test-bdd-headed`   | Run BDD tests with visible browser | Debugging scenarios       |
+| `make test-bdd-smoke`    | Run smoke tests only               | Quick validation          |
+| `make test-bdd TAG=@tag` | Run tests with specific tag        | `make test-bdd TAG=@slow` |
+
+### **Feature Files Structure**
+
+```
+features/
+├── crypto-navigation.feature     # Gherkin scenarios
+├── fixtures/
+│   └── bdd-fixtures.ts          # BDD-compatible fixtures
+└── step-definitions/
+    └── navigation-steps.ts      # Step implementations
+```
+
+### **Sample BDD Scenario**
+
+```gherkin
+Feature: Crypto.com Exchange Navigation Tests
+  As a user of Crypto.com exchange
+  I want to navigate the website effectively
+  So that I can access different trading and market sections
+
+  Background:
+    Given I navigate to the crypto.com exchange
+    And I dismiss any cookie banners or modals
+    And I wait for the page to load completely
+
+  @smoke
+  Scenario: Load crypto.com exchange successfully
+    When I verify the page URL contains "crypto.com/exchange"
+    And I verify the BTC_USD trading pair is loaded
+    Then the crypto.com exchange should load successfully
+    And the BTC_USD trading pair should be displayed
+```
+
+### **Available Tags**
+
+- `@smoke` - Critical functionality tests (quick execution)
+- `@slow` - Comprehensive tests that may take longer
+- `@regression` - Full regression testing scenarios
+
+### **BDD Benefits**
+
+- ✅ **Natural Language**: Tests written in plain English
+- ✅ **Business Readable**: Non-technical stakeholders can understand tests
+- ✅ **Reuses Fixtures**: All existing fixture functions preserved without modification
+- ✅ **Selective Execution**: Run specific scenarios using tags
+- ✅ **Enhanced Reporting**: Clear scenario descriptions in reports
 
 ---
 
@@ -153,9 +247,14 @@ make allure-open            # Allure HTML report (if generated)
 ```
 playwright-api-demo/
 ├── tests/                   # E2E and accessibility test files
+├── features/                # BDD/Gherkin feature files and step definitions
+│   ├── *.feature           # Gherkin scenarios in natural language
+│   ├── fixtures/            # BDD-compatible fixture implementations
+│   └── step-definitions/    # Step definition mappings
 ├── src/                     # Mock API server (Express.js)
 ├── docker/                  # Separated Dockerfiles for each test suite
 ├── playwright.config.ts     # Main Playwright configuration
+├── playwright-bdd.config.ts # BDD-specific Playwright configuration
 ├── playwright.accessibility.config.ts  # WCAG testing configuration
 ├── Makefile                 # Essential commands and workflows
 └── docker-compose.yml       # Multi-service Docker orchestration

@@ -56,6 +56,20 @@ else
 	npm run test:allure
 endif
 
+test-bdd: ## Run BDD tests (use TAG=@smoke for specific tags)
+ifdef TAG
+	npm run test:bdd -- --grep "$(TAG)"
+else
+	npm run test:bdd
+endif
+
+test-bdd-headed: ## Run BDD tests in headed mode (use TAG=@smoke for specific tags)
+ifdef TAG
+	npm run test:bdd:headed -- --grep "$(TAG)"
+else
+	npm run test:bdd:headed
+endif
+
 test-accessibility: ## Run WCAG accessibility tests
 	npm run test:accessibility
 
