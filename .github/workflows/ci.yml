@@ -87,50 +87,11 @@ jobs:
             allure-results/
           retention-days: 7
 
-      - name: Generate test summary
+      - name: Deploy to GitHub Pages
         if: always()
-        run: |
-          echo "## 🧪 E2E Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Show tag information if provided
-          if [ -n "${{ github.event.inputs.tag }}" ]; then
-            echo "### 🏷️ Tag Filter Applied" >> $GITHUB_STEP_SUMMARY
-            echo "**Filter:** \`${{ github.event.inputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          # Check if test results exist
-          if [ -d "test-results" ] && [ "$(ls -A test-results)" ]; then
-            echo "### ✅ Test Execution Completed" >> $GITHUB_STEP_SUMMARY
-            echo "E2E tests have been executed via Docker container." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            # Count test files
-            TEST_COUNT=$(find test-results -name "*.xml" -o -name "*.json" | wc -l)
-            echo "- 📁 **Result Files Generated:** $TEST_COUNT" >> $GITHUB_STEP_SUMMARY
-            
-            # Check for screenshots/videos (indicates failures)
-            SCREENSHOT_COUNT=$(find test-results -name "*.png" -o -name "*.webm" | wc -l)
-            if [ "$SCREENSHOT_COUNT" -gt 0 ]; then
-              echo "- 📸 **Screenshots/Videos:** $SCREENSHOT_COUNT (failures detected)" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "- ✅ **No failure artifacts found**" >> $GITHUB_STEP_SUMMARY
-            fi
-          else
-            echo "### ⚠️ No Test Results Found" >> $GITHUB_STEP_SUMMARY
-            echo "Tests may have failed to run or generate results." >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 Reports Available" >> $GITHUB_STEP_SUMMARY
-          ARTIFACT_NAME="${{ github.event.inputs.tag && format('e2e-test-results-{0}-{1}', github.event.inputs.tag, github.run_number) || format('e2e-test-results-pr-{0}', github.event.number || github.run_number) }}"
-          echo "Download the \`$ARTIFACT_NAME\` artifact to view:" >> $GITHUB_STEP_SUMMARY
-          echo "- **Playwright HTML Report:** Open \`playwright-report/index.html\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Test Results:** Raw test execution data in \`test-results/\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Allure Results:** For Allure report generation in \`allure-results/\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🎭 Tests Executed" >> $GITHUB_STEP_SUMMARY
-          echo "- **E2E Navigation Tests:** Crypto trading platform functionality" >> $GITHUB_STEP_SUMMARY
-          echo "- **Browser:** Chromium in Docker container" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment:** Headless mode with consistent Docker runtime" >> $GITHUB_STEP_SUMMARY
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-report
+          keep_files: false
