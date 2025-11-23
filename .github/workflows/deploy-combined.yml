@@ -1,0 +1,326 @@
+name: Deploy Combined Reports to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'choose ENV, it could be dev, staging or prod'
+        required: false
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: 'combined-pages'
+  cancel-in-progress: false
+
+jobs:
+  generate-and-deploy-reports:
+    name: Generate E2E & WCAG Reports, Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Create report directories
+        run: |
+          mkdir -p test-results playwright-report allure-results allure-report accessibility-report combined-reports
+
+      - name: Build E2E Docker image
+        run: |
+          echo "🐳 Building E2E Docker image..."
+          docker build -f docker/Dockerfile.e2e -t e2e-tests .
+
+      - name: Run E2E tests in Docker for Allure report
+        run: |
+          echo "🎭 Running E2E tests in Docker container to generate Allure reports..."
+
+          # Set the test command for Allure report generation
+          TEST_CMD="npm run test:allure && npm run allure:generate"
+
+          # Run E2E tests with volume mounts for all results and reports
+          docker run --rm \
+            -v $(pwd)/test-results:/app/test-results \
+            -v $(pwd)/playwright-report:/app/playwright-report \
+            -v $(pwd)/allure-results:/app/allure-results \
+            -v $(pwd)/allure-report:/app/allure-report \
+            -e CI=true \
+            -e BASE_URL=${{ github.event.inputs.env == 'prod' && 'https://crypto.com/exchange/trade/BTC_USD' || github.event.inputs.env == 'staging' && 'https://crypto.com/exchange/trade/BTC_USD' || 'https://crypto.com/exchange/trade/BTC_USD' }} \
+            -e TEST_TIMEOUT=60000 \
+            -e HEADLESS=true \
+            e2e-tests \
+            sh -c "$TEST_CMD"
+
+      - name: Run WCAG accessibility tests
+        run: |
+          echo "♿ Running WCAG accessibility tests..."
+          npm run test:wcag:report
+        env:
+          CI: true
+          BASE_URL: ${{ github.event.inputs.env == 'prod' && 'https://crypto.com/exchange/trade/BTC_USD' || github.event.inputs.env == 'staging' && 'https://crypto.com/exchange/trade/BTC_USD' || 'https://crypto.com/exchange/trade/BTC_USD' }}
+          HEADLESS: true
+
+      - name: Create combined reports structure
+        run: |
+          echo "📁 Creating combined reports structure..."
+
+          # Create main index page
+          cat > combined-reports/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Playwright Test Reports - crypto.com Exchange</title>
+              <style>
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  body { 
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      min-height: 100vh;
+                      padding: 2rem;
+                  }
+                  .container { max-width: 1200px; margin: 0 auto; }
+                  .header { text-align: center; margin-bottom: 3rem; color: white; }
+                  .header h1 { font-size: 3rem; margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+                  .header p { font-size: 1.2rem; opacity: 0.9; }
+                  .reports-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; }
+                  .report-card { 
+                      background: white; 
+                      border-radius: 15px; 
+                      padding: 2rem; 
+                      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                      transition: transform 0.3s ease, box-shadow 0.3s ease;
+                  }
+                  .report-card:hover { 
+                      transform: translateY(-5px); 
+                      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+                  }
+                  .report-icon { font-size: 3rem; margin-bottom: 1rem; }
+                  .report-title { font-size: 1.5rem; margin-bottom: 1rem; color: #333; }
+                  .report-description { color: #666; margin-bottom: 2rem; line-height: 1.6; }
+                  .report-button { 
+                      display: inline-block;
+                      background: linear-gradient(45deg, #667eea, #764ba2);
+                      color: white;
+                      padding: 12px 24px;
+                      text-decoration: none;
+                      border-radius: 8px;
+                      font-weight: 600;
+                      transition: all 0.3s ease;
+                  }
+                  .report-button:hover { 
+                      background: linear-gradient(45deg, #764ba2, #667eea);
+                      transform: scale(1.05);
+                  }
+                  .meta-info {
+                      background: rgba(255,255,255,0.1);
+                      padding: 1rem;
+                      border-radius: 10px;
+                      margin-top: 2rem;
+                      color: white;
+                      text-align: center;
+                  }
+                  .badge { 
+                      display: inline-block; 
+                      background: rgba(255,255,255,0.2); 
+                      padding: 4px 12px; 
+                      border-radius: 20px; 
+                      font-size: 0.9rem; 
+                      margin: 0 5px;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>🎭 Playwright Test Reports</h1>
+                      <p>Comprehensive testing results for crypto.com Exchange platform</p>
+                  </div>
+                  
+                  <div class="reports-grid">
+                      <div class="report-card">
+                          <div class="report-icon">📊</div>
+                          <h2 class="report-title">Allure Test Report</h2>
+                          <p class="report-description">
+                              Comprehensive E2E test results with detailed execution history, 
+                              trends, and interactive test case breakdowns. Includes screenshots, 
+                              videos, and step-by-step test execution details.
+                          </p>
+                          <a href="./allure/" class="report-button">View Allure Report →</a>
+                      </div>
+                      
+                      <div class="report-card">
+                          <div class="report-icon">♿</div>
+                          <h2 class="report-title">WCAG Accessibility Report</h2>
+                          <p class="report-description">
+                              WCAG 2.1 AA/AAA compliance testing results with detailed accessibility 
+                              violations, recommendations, and visual evidence of issues found 
+                              during automated accessibility scanning.
+                          </p>
+                          <a href="./wcag/" class="report-button">View WCAG Report →</a>
+                      </div>
+                  </div>
+                  
+                  <div class="meta-info">
+                      <p><strong>Generated:</strong> <span id="timestamp"></span></p>
+                      <p><strong>Environment:</strong> <span class="badge">ENVIRONMENT_PLACEHOLDER</span></p>
+                      <p><strong>Commit:</strong> <span class="badge">COMMIT_PLACEHOLDER</span></p>
+                      <p><strong>Workflow:</strong> <span class="badge">WORKFLOW_PLACEHOLDER</span></p>
+                  </div>
+              </div>
+              
+              <script>
+                  document.getElementById('timestamp').textContent = new Date().toLocaleString();
+              </script>
+          </body>
+          </html>
+          EOF
+
+      - name: Copy reports to combined structure
+        run: |
+          echo "📋 Organizing reports..."
+
+          # Copy Allure report
+          if [ -d "allure-report" ] && [ -f "allure-report/index.html" ]; then
+            cp -r allure-report combined-reports/allure
+            echo "✅ Allure report copied"
+          else
+            echo "⚠️ Allure report not found, creating placeholder"
+            mkdir -p combined-reports/allure
+            echo "<h1>Allure Report Not Available</h1><p>E2E tests may have failed or not generated reports.</p>" > combined-reports/allure/index.html
+          fi
+
+          # Copy WCAG report
+          if [ -d "accessibility-report" ] && [ -f "accessibility-report/index.html" ]; then
+            cp -r accessibility-report combined-reports/wcag
+            echo "✅ WCAG report copied"
+          else
+            echo "⚠️ WCAG report not found, creating placeholder"
+            mkdir -p combined-reports/wcag
+            echo "<h1>WCAG Report Not Available</h1><p>Accessibility tests may have failed or not generated reports.</p>" > combined-reports/wcag/index.html
+          fi
+
+      - name: Update main page with metadata
+        run: |
+          echo "🔄 Adding metadata to main page..."
+
+          # Update placeholders in index.html
+          ENV_VALUE="${{ github.event.inputs.env || 'dev' }}"
+          COMMIT_SHORT="${{ github.sha }}"
+          COMMIT_SHORT=${COMMIT_SHORT:0:7}
+          WORKFLOW_EVENT="${{ github.event_name }}"
+
+          sed -i "s/ENVIRONMENT_PLACEHOLDER/$ENV_VALUE/g" combined-reports/index.html
+          sed -i "s/COMMIT_PLACEHOLDER/$COMMIT_SHORT/g" combined-reports/index.html
+          sed -i "s/WORKFLOW_PLACEHOLDER/$WORKFLOW_EVENT/g" combined-reports/index.html
+
+      - name: Verify combined reports
+        run: |
+          echo "🔍 Verifying combined reports structure..."
+          find combined-reports -type f -name "*.html" | head -10
+
+          ls -la combined-reports/
+          echo "Main page exists:" $([ -f "combined-reports/index.html" ] && echo "✅" || echo "❌")
+          echo "Allure report exists:" $([ -f "combined-reports/allure/index.html" ] && echo "✅" || echo "❌")
+          echo "WCAG report exists:" $([ -f "combined-reports/wcag/index.html" ] && echo "✅" || echo "❌")
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload combined reports to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./combined-reports
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-test-results-${{ github.run_number }}
+          path: |
+            combined-reports/
+            test-results/
+            playwright-report/
+            allure-results/
+            accessibility-results.json
+            accessibility-results.xml
+          retention-days: 7
+
+      - name: Generate deployment summary
+        if: always()
+        run: |
+          echo "## 🎭 Combined Test Reports Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.deployment.outcome }}" == "success" ]; then
+            echo "### ✅ Deployment Successful" >> $GITHUB_STEP_SUMMARY
+            echo "Combined test reports have been successfully deployed to GitHub Pages!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**🌐 Main Report Hub:** ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+            echo "**📊 Allure Reports:** ${{ steps.deployment.outputs.page_url }}allure/" >> $GITHUB_STEP_SUMMARY
+            echo "**♿ WCAG Reports:** ${{ steps.deployment.outputs.page_url }}wcag/" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📋 Report Contents" >> $GITHUB_STEP_SUMMARY
+            echo "#### Allure Report Features:" >> $GITHUB_STEP_SUMMARY
+            echo "- **Test Execution History:** Detailed test run timeline" >> $GITHUB_STEP_SUMMARY
+            echo "- **Trends & Analytics:** Historical success/failure patterns" >> $GITHUB_STEP_SUMMARY
+            echo "- **Screenshots & Videos:** Visual evidence of test execution" >> $GITHUB_STEP_SUMMARY
+            echo "- **Step-by-Step Details:** Granular test execution breakdown" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "#### WCAG Accessibility Features:" >> $GITHUB_STEP_SUMMARY
+            echo "- **WCAG 2.1 Compliance:** AA/AAA level accessibility testing" >> $GITHUB_STEP_SUMMARY
+            echo "- **Violation Details:** Specific accessibility issues found" >> $GITHUB_STEP_SUMMARY
+            echo "- **Remediation Guide:** Actionable fixes for each violation" >> $GITHUB_STEP_SUMMARY
+            echo "- **Visual Evidence:** Screenshots of accessibility problems" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
+            echo "There was an issue deploying the combined reports to GitHub Pages." >> $GITHUB_STEP_SUMMARY
+            echo "Check the workflow logs for details." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔄 Execution Summary" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "- **Trigger:** Push to main branch (PR merged)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Trigger:** Manual workflow dispatch" >> $GITHUB_STEP_SUMMARY
+            echo "- **Environment:** ${{ github.event.inputs.env || 'dev' }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "- **E2E Tests:** Docker containerized execution" >> $GITHUB_STEP_SUMMARY
+          echo "- **WCAG Tests:** Native Playwright with accessibility focus" >> $GITHUB_STEP_SUMMARY
+          echo "- **Browsers:** Chromium, Firefox (E2E) + Chromium (WCAG)" >> $GITHUB_STEP_SUMMARY

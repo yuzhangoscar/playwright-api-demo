@@ -1,0 +1,146 @@
+# DISABLED: This workflow has been replaced by deploy-combined.yml
+# which provides both Allure and WCAG reports together at:
+# - Main hub: https://yuzhangoscar.github.io/playwright-api-demo/
+# - Allure reports: https://yuzhangoscar.github.io/playwright-api-demo/allure/ 
+# - WCAG reports: https://yuzhangoscar.github.io/playwright-api-demo/wcag/
+#
+# To re-enable individual WCAG deployment, rename this file back to .yml
+# and disable deploy-combined.yml
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "wcag-pages"
+  cancel-in-progress: false
+
+jobs:
+  wcag-test-and-deploy:
+    name: WCAG Tests & Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Create report directories
+        run: |
+          mkdir -p accessibility-report test-results
+
+      - name: Run WCAG accessibility tests
+        run: |
+          echo "♿ Running WCAG accessibility tests..."
+          npm run test:wcag:report
+        env:
+          CI: true
+          BASE_URL: ${{ github.event.inputs.env == 'prod' && 'https://crypto.com/exchange/trade/BTC_USD' || github.event.inputs.env == 'staging' && 'https://crypto.com/exchange/trade/BTC_USD' || 'https://crypto.com/exchange/trade/BTC_USD' }}
+          HEADLESS: true
+
+      - name: Verify WCAG report generation
+        run: |
+          echo "📊 Verifying WCAG report was generated..."
+          ls -la accessibility-report/
+          if [ ! -f "accessibility-report/index.html" ]; then
+            echo "❌ WCAG report index.html not found!"
+            exit 1
+          fi
+          echo "✅ WCAG report generated successfully"
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload WCAG report to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./accessibility-report
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wcag-test-results-${{ github.run_number }}
+          path: |
+            accessibility-report/
+            test-results/
+            accessibility-results.json
+            accessibility-results.xml
+          retention-days: 7
+
+      - name: Generate deployment summary
+        if: always()
+        run: |
+          echo "## ♿ WCAG Accessibility Report Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.deployment.outcome }}" == "success" ]; then
+            echo "### ✅ Deployment Successful" >> $GITHUB_STEP_SUMMARY
+            echo "WCAG accessibility report has been successfully deployed to GitHub Pages!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**🌐 Live WCAG Report URL:** ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📊 WCAG Report Contents" >> $GITHUB_STEP_SUMMARY
+            echo "- **Accessibility Violations:** Detailed WCAG compliance issues" >> $GITHUB_STEP_SUMMARY
+            echo "- **Test Results:** Pass/fail status for accessibility tests" >> $GITHUB_STEP_SUMMARY
+            echo "- **Screenshots:** Visual evidence of accessibility issues" >> $GITHUB_STEP_SUMMARY
+            echo "- **Recommendations:** Actionable fixes for accessibility problems" >> $GITHUB_STEP_SUMMARY
+            echo "- **Standards Coverage:** WCAG 2.1 AA/AAA compliance testing" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
+            echo "There was an issue deploying the WCAG report to GitHub Pages." >> $GITHUB_STEP_SUMMARY
+            echo "Check the workflow logs for details." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔍 Test Summary" >> $GITHUB_STEP_SUMMARY
+          
+          # Count test files and results
+          if [ -f "accessibility-results.json" ]; then
+            echo "- **JSON Results:** Available for programmatic analysis" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f "accessibility-results.xml" ]; then
+            echo "- **XML Results:** JUnit format for CI integration" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -d "test-results" ]; then
+            TEST_COUNT=$(find test-results -name "*.png" -o -name "*.webm" 2>/dev/null | wc -l)
+            if [ "$TEST_COUNT" -gt 0 ]; then
+              echo "- **Evidence Files:** $TEST_COUNT screenshots/videos captured" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔄 Triggered By" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "- **Event:** Push to main branch (PR merged)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Event:** Manual workflow dispatch" >> $GITHUB_STEP_SUMMARY
+            echo "- **Environment:** ${{ github.event.inputs.env || 'dev' }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ♿ Accessibility Standards Tested" >> $GITHUB_STEP_SUMMARY
+          echo "- **WCAG 2.1 Level A:** Basic accessibility requirements" >> $GITHUB_STEP_SUMMARY
+          echo "- **WCAG 2.1 Level AA:** Standard accessibility requirements" >> $GITHUB_STEP_SUMMARY  
+          echo "- **WCAG 2.1 Level AAA:** Enhanced accessibility requirements" >> $GITHUB_STEP_SUMMARY
+          echo "- **Browser:** Chromium with accessibility-focused settings" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tools:** axe-core accessibility engine integration" >> $GITHUB_STEP_SUMMARY
