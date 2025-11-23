@@ -46,11 +46,14 @@ jobs:
       - name: Build E2E Docker image
         run: |
           echo "🐳 Building E2E Docker image..."
-          docker build -f Dockerfile -t e2e-tests .
+          docker build -f docker/Dockerfile.e2e -t e2e-tests .
 
       - name: Run E2E tests in Docker for Allure report
         run: |
           echo "🎭 Running E2E tests in Docker container to generate Allure reports..."
+
+          # Set the test command for Allure report generation
+          TEST_CMD="npm run test:allure && npm run allure:generate"
 
           # Run E2E tests with volume mounts for all results and reports
           docker run --rm \
@@ -63,7 +66,7 @@ jobs:
             -e TEST_TIMEOUT=60000 \
             -e HEADLESS=true \
             e2e-tests \
-            npm run test:allure && npm run allure:generate
+            sh -c "$TEST_CMD"
 
       - name: Verify Allure report generation
         run: |
