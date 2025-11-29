@@ -1,0 +1,15 @@
+name: Repository Dispatch Demo
+
+on:
+  repository_dispatch:
+    types: 
+      - custom-event
+
+jobs:
+  handle-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show event data
+        run: |
+          echo "Event type: ${{ github.event.action }}"
+          echo "Client payload: ${{ toJSON(github.event.client_payload) }}"
