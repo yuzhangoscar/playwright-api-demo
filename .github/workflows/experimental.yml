@@ -8,13 +8,19 @@ permissions:
   contents: read
 
 jobs:
-  logging:
-    name: Logging in the console
+  create-shell-script:
+    name: Create a shell script
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - name: Provide the whole log of this event
-        run: |
-          echo "----START----"
-          echo "this is logging from Events Demo upon ${{ github.event_name }}"
-          echo "the action we took is ${{ github.event.action }}"
+      - uses: actions/checkout@v4
+        with:
+          path: tests
+      - run: |
+          touch script.sh
+          cat >> script.sh << 'EOF'
+          #!/bin/bash
+          echo "this is from script.sh"
+          EOF
+          chmod +x script.sh
+          ./script.sh
+
