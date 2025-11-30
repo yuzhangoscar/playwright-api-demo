@@ -1,6 +1,7 @@
 name: Events Demo
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 0 * * SUN'
 
@@ -23,4 +24,13 @@ jobs:
           EOF
           chmod +x script.sh
           ./script.sh
+  run-reusable-action:
+    name: Import and execute a re-usable action file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/reusable-actions
+        with: 
+          environment: staging
+          mood: happy
 

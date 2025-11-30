@@ -1,0 +1,28 @@
+name: 'Multi-Job Reusable Action'
+description: 'Performs testing and deployment tasks'
+author: 'Yu Zhang'
+
+inputs:
+  environment:
+    description: 'Environment to deploy to (staging/production)'
+    required: true
+  
+  mood:
+    description: 'Which mood am I in'
+    required: false
+    default: 'sad'
+
+outputs:
+  test-result:
+    description: 'Action results (pass/fail)'
+    value: 'action.yml executed'
+
+runs:
+  using: 'composite'
+  steps:
+    # Job 1: Setup
+    - name: Log all inputs
+      shell: bash
+      run: |
+        echo "environment: ${{inputs.environment}}"
+        echo "mood: ${{inputs.mood}}"
