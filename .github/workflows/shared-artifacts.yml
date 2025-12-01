@@ -41,6 +41,7 @@ jobs:
           cat >> homework.sh << 'EOF'
           echo "reuse the artifact for first time"
           EOF
+          chmod +x homework.sh
           ./homework.sh
       - uses: actions/upload-artifact@v4
         with:
