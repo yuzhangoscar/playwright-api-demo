@@ -1,0 +1,48 @@
+name: Shared Artifacts Demo
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  create-an-artifact:
+    name: Create a shell script
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: tests
+      - run: |
+          touch homework.sh
+          cat >> homework.sh << 'EOF'
+          #!/bin/bash
+          echo "this is a scheduled event executed at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "homework.sh created"
+          EOF
+          chmod +x homework.sh
+          ./homework.sh
+      - uses: actions/upload-artifact@v3
+        with:
+          name: homework
+          path: ./homework.sh
+  reuse-the-artifact-first-time:
+    name: Download the artifact
+    needs: create-an-artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v3
+        with: 
+          name: homework
+      - run: |
+          cat >> homework.sh << 'EOF'
+          echo "reuse the artifact for first time"
+          EOF
+          ./homework.sh
+      - uses: actions/upload-artifact@v3
+        with:
+          name: homework
+          path: ./homework.sh
